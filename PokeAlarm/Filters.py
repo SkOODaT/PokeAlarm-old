@@ -1,4 +1,5 @@
 # Standard Library Imports
+import copy
 import sys
 import logging
 # 3rd Party Imports
@@ -9,49 +10,91 @@ from Utils import parse_boolean, reject_leftover_parameters, get_team_id, get_mo
 
 log = logging.getLogger('Filters')
 
+# Maps names to filters.
+named_filters = {}
+
+# Maps names to lists of alternative filters.
+filter_sets  = {}
+
 
 # Check if a filter is a Boolean, a Single Filter, or Multiple Filters
 def create_multi_filter(location, FilterType, settings, default):
+    global named_filters, filter_sets
+
     bool = parse_boolean(settings)
     if bool is not None:  # Make a new filter off of one of the defaults
         if bool is True:
             return [FilterType({}, default, location)]
         else:
             return None
-    elif type(settings) == dict:  # Single filter
+    elif type(settings) == dict:  # Single literal filter
         return [FilterType(settings, default, location)]
-    elif type(settings) == list:  # Multiple Filters
+    elif isinstance(settings, list):  # Multiple Filters
         rtn = []
         for filt in settings:
-            rtn.append(FilterType(filt, default, location))
+            if type(filt) == dict:
+                # We got a literal filter
+                rtn.append(FilterType(filt, default, location))
+            elif isinstance(filt, basestring) and filt in named_filters:
+                # We got a name for a named filter
+                rtn.append(FilterType(named_filters[filt].copy(), default, location))
+            else:
+                log.error("Unknown filter for {}: {}".format(location, str(filt)))
+                sys.exit(1)
         return rtn
-    else:
-        log.error("{} contains filter that is not in the proper format. Accepted formats are: ".format(location))
-        log.error("'True' for default filter, 'False' for disabled,")
-        log.error("{ ... filter info ...} for a single filter,")
-        log.error("[ {filter1}, {filter2}, {filter3} ] for multiple filters. ")
-        log.error("Please check the PokeAlarm documentation for more information.")
-        sys.exit(1)
+    elif isinstance(settings, basestring):
+        # We got a name that can either reference a filter set or a named filter.
+        if settings in filter_sets:
+            # We got a name of a filter set - call recursively with the filter set
+            return create_multi_filter(location, FilterType, copy.deepcopy(filter_sets[settings]), default)
+        elif settings in named_filters:
+            # We got a name of a filter - we use it directly
+            return [FilterType(named_filters[settings].copy(), default, location)]
+
+    # All other cases are errors
+    log.error("{} contains filter that is not in the proper format. Accepted formats are: ".format(location))
+    log.error("'True' for default filter, 'False' for disabled,")
+    log.error("{ ... filter info ...} for a single filter,")
+    log.error("[ {filter1}, {filter2}, {filter3} ] for multiple filters")
+    log.error("or the name of either a filter or a filter set.")
+    log.error("Please check the PokeAlarm documentation for more information.")
+    sys.exit(1)
+
+
+def load_filters(settings):
+    global named_filters, filter_sets
+
+    named_filters = settings.pop("filters", {})
+    # Store filter name in filter for nicer logging output
+    for filter_name, filter in named_filters.iteritems():
+        filter['name'] = filter_name
+
+    filter_sets = {}
+    # Expand filter names to filters in filter sets
+    for filter_set_name, filter_set in settings.pop('filter_sets', {}).iteritems():
+        fset_expanded = []
+        for filter in filter_set:
+            if isinstance(filter, basestring) and filter in named_filters:
+                fset_expanded.append(named_filters[filter])
+            elif type(filter) == dict:
+                fset_expanded.append(filter)
+            else:
+                log.error("Unsupported filter set: {} -> {}".format(filter_set_name, str(filter)))
+                sys.exit(1)
+        filter_sets[filter_set_name] = fset_expanded
 
 
 def load_pokemon_filters(settings):
-    # Set the defaults for "True"
-    default_filt = PokemonFilter(settings.pop('default', {}), {
-        "ignore_missing": False,
-        "min_dist": 0.0, "max_dist": float('inf'),
-        "min_cp": 0, "max_cp": 999999,
-        "min_level": 0, "max_level": 40,
-        "min_iv": 0.0, "max_iv": 100.0,
-        "min_atk": 0, "max_atk": 15,
-        "min_def": 0, "max_def": 15,
-        "min_sta": 0, "max_sta": 15,
-        "quick_move": None, "charge_move": None, "moveset": None,
-        "size": None,
-        "gender": None,
-        "form": None,
-        "min_rating_attack": "F", "max_rating_attack": "A",
-        "min_rating_defense": "F", "max_rating_defense": "A"
-    }, 'default')
+    # Determine Pokemon defaults - start with ANY filter
+    pkmn_defaults = PokemonFilter.get_defaults()
+    user_defaults = settings.pop("default", {})
+    if type(user_defaults) == list:
+        log.error("Default Pokemon filter cannot be a list '[...]'.")
+        log.error("Use a dict '{...}' or filter name instead.")
+        log.error("Please see PokeAlarm documentation for proper Filter file formatting.")
+        sys.exit(1)
+    default_filt = create_multi_filter("user defaults", PokemonFilter, user_defaults, pkmn_defaults)[0]
+    log.info("Global Pokemon defaults: {}".format(default_filt.to_string()))
     default = default_filt.to_dict()
 
     # Add the filters to the settings
@@ -91,20 +134,15 @@ def load_pokemon_section(settings):
 
 def load_pokestop_section(settings):
     log.info("Setting Pokestop filters...")
-    # Set the defaults settings for "True"
-    default_true = {"min_dist": 0.0, "max_dist": float('inf')}
     stop = {
         "enabled": bool(parse_boolean(require_and_remove_key('enabled', settings, 'Pokestops')) or False),
         "filters": create_multi_filter('Pokestops --> filters', PokestopFilter,
-                                       settings.pop('filters', "False"), default_true)
+                                       settings.pop('filters', "False"), PokestopFilter.get_defaults())
     }
 
     reject_leftover_parameters(settings, "Pokestops section of Filters file.")
-    for filt in stop['filters']:
-        log.debug("Between {} and {} away.".format(
-            get_dist_as_str(filt.min_dist), get_dist_as_str(filt.max_dist)))
-    if stop['enabled'] is False:
-        log.info("Pokestop notifications will NOT be sent - Enabled is False.")
+    for i in range(len(stop['filters'])):
+        log.debug("F#{}: ".format(i) + stop['filters'][i].to_string())
     return stop
 
 
@@ -112,10 +150,7 @@ def load_gym_section(settings):
     log.info("Setting Gym filters...")
     # Set the defaults for "True"
     # Override defaults using a new Filter to verify inputs
-    default_filt = GymFilter(settings.pop('default', {}), {
-        "to_team": {0, 1, 2, 3}, "from_team": {0, 1, 2, 3},
-        "min_dist": 0.0, "max_dist": float('inf')
-    }, 'default')
+    default_filt = GymFilter(settings.pop('default', {}), GymFilter.get_defaults(), 'default')
     default = default_filt.to_dict()
     # Create the settings for gyms
     gym = {
@@ -126,11 +161,8 @@ def load_gym_section(settings):
     }
 
     reject_leftover_parameters(settings, 'Gym section of Filters file.')  # Check for leftovers
-
-    for filt in gym['filters']:
-        log.debug("Team(s) {} changes to Team(s) {} between {} and {}.".format(
-            filt.from_team, filt.to_team, get_dist_as_str(filt.min_dist), get_dist_as_str(filt.max_dist)
-        ))
+    for i in range(len(gym['filters'])):
+        log.debug("F#{}: ".format(i) + gym['filters'][i].to_string())
     if gym['enabled'] is False:
         log.info("Gym notifications will NOT be sent. - Enabled is False  ")
     return gym
@@ -164,40 +196,70 @@ def load_raid_section(settings):
     return raid
 
 
+# Base filter class. Every filter may contain at least these criteria.
 class Filter(object):
 
     def __init__(self, settings, default, location):
         """ Abstract class used to define identify and group limits on when notifications are sent. """
-        raise NotImplementedError("This is an abstract method.")
+        self.name = settings.pop('name', None)
+        self.min_dist = float(settings.pop('min_dist', None) or default['min_dist'])
+        self.max_dist = float(settings.pop('max_dist', None) or default['max_dist'])
+
+    # Returns the system default filter values.
+    @staticmethod
+    def get_defaults():
+        return {
+            "min_dist": 0.0, "max_dist": float('inf')
+        }
+
+    # Checks the given distance against this filter
+    def check_dist(self, dist):
+        return self.min_dist <= dist <= self.max_dist
 
     # Convert filter to a dict. Helpful in logging situations.
     def to_dict(self):
-        raise NotImplementedError("This is an abstract method.")
+        return {"min_dist": self.min_dist, "max_dist": self.max_dist}
+
+    # Pretty print this filter to a string.
+    def to_string(self):
+        defaults = Filter.get_defaults()
+        parts = []
+        if self.name:
+            parts.append("\"{}\":".format(self.name))
+        if self.min_dist != defaults["min_dist"] or self.max_dist != defaults["max_dist"]:
+            parts.append("Dist: {} to {}".format(get_dist_as_str(self.min_dist), get_dist_as_str(self.max_dist)))
+        return " ".join(parts)
 
 
 #  Used to determine when Pokemon notifications will be triggered.
 class PokemonFilter(Filter):
 
     def __init__(self, settings, default, location):
-        self.min_dist = float(settings.pop('min_dist', None) or default['min_dist'])
-        self.max_dist = float(settings.pop('max_dist', None) or default['max_dist'])
+        super(PokemonFilter, self).__init__(settings, default, location)
+        pDefaults = PokemonFilter.get_defaults()
         # Do we ignore pokemon with missing info?
         self.ignore_missing = bool(parse_boolean(settings.pop('ignore_missing', default['ignore_missing'])))
         # CP
         self.min_cp = int(settings.pop('min_cp', None) or default['min_cp'])
         self.max_cp = int(settings.pop('max_cp', None) or default['max_cp'])
+        self.needs_cp = self.min_cp != pDefaults['min_cp'] or self.max_cp != pDefaults['max_cp']
         # Level
         self.min_level = int(settings.pop('min_level', None) or default['min_level'])
         self.max_level = int(settings.pop('max_level', None) or default['max_level'])
+        self.needs_level = self.min_level != pDefaults['min_level'] or self.max_level != pDefaults['max_level']
         # IVs
         self.min_iv = float(settings.pop('min_iv', None) or default['min_iv'])
         self.max_iv = float(settings.pop('max_iv', None) or default['max_iv'])
+        self.needs_iv = self.min_iv != pDefaults['min_iv'] or self.max_iv != pDefaults['max_iv']
         self.min_atk = int(settings.pop('min_atk', None) or default['min_atk'])
         self.max_atk = int(settings.pop('max_atk', None) or default['max_atk'])
+        self.needs_atk = self.min_atk != pDefaults['min_atk'] or self.max_atk != pDefaults['max_atk']
         self.min_def = int(settings.pop('min_def', None) or default['min_def'])
         self.max_def = int(settings.pop('max_def', None) or default['max_def'])
+        self.needs_def = self.min_def != pDefaults['min_def'] or self.max_def != pDefaults['max_def']
         self.min_sta = int(settings.pop('min_sta', None) or default['min_sta'])
         self.max_sta = int(settings.pop('max_sta', None) or default['max_sta'])
+        self.needs_sta = self.min_sta != pDefaults['min_sta'] or self.max_sta != pDefaults['max_sta']
         # Size
         self.sizes = PokemonFilter.check_sizes(settings.pop("size", default['size']))
         self.genders = PokemonFilter.check_genders(settings.pop("gender", default['gender']))
@@ -209,14 +271,12 @@ class PokemonFilter(Filter):
         # Moveset Ratings
         self.min_rating_attack = (settings.pop('min_rating_attack', None) or default['min_rating_attack']).upper()
         self.max_rating_attack = (settings.pop('max_rating_attack', None) or default['max_rating_attack']).upper()
+        self.needs_rating_attack = self.min_rating_attack != pDefaults['min_rating_attack'] or self.max_rating_attack != pDefaults['max_rating_attack']
         self.min_rating_defense = (settings.pop('min_rating_defense', None) or default['min_rating_defense']).upper()
         self.max_rating_defense = (settings.pop('max_rating_defense', None) or default['max_rating_defense']).upper()
+        self.needs_rating_defense = self.min_rating_defense != pDefaults['min_rating_defense'] or self.max_rating_defense != pDefaults['max_rating_defense']
 
         reject_leftover_parameters(settings, "pokemon filter under '{}'".format(location))
-
-    # Checks the given distance against this filter
-    def check_dist(self, dist):
-        return self.min_dist <= dist <= self.max_dist
 
     # Checks the CP against this filter
     def check_cp(self, cp):
@@ -289,8 +349,8 @@ class PokemonFilter(Filter):
 
     # Convert this filter to a dict
     def to_dict(self):
-        return {
-            "min_dist": self.min_dist, "max_dist": self.max_dist,
+        rtn = super(PokemonFilter, self).to_dict()
+        rtn.update({
             "min_cp": self.min_cp, "max_cp": self.max_cp,
             "min_level": self.min_level, "max_level": self.max_level,
             "min_iv": self.min_iv, "max_iv": self.max_iv,
@@ -305,25 +365,69 @@ class PokemonFilter(Filter):
             "min_rating_attack": self.min_rating_attack, "max_rating_attack": self.max_rating_attack,
             "min_rating_defense": self.min_rating_defense, "max_rating_defense": self.max_rating_defense,
             "ignore_missing": self.ignore_missing
-        }
+        })
+        return rtn
 
     # Print this filter
     def to_string(self):
-        return "Dist: {} to {}, ".format(self.min_dist, self.max_dist) + \
-               "CP: {} to {}, ".format(self.min_cp, self.max_cp) + \
-               "Level: {} to {}, ".format(self.min_level, self.max_level) + \
-               "IV%: {} to {}, ".format(self.min_iv, self.max_iv) +  \
-               "Atk: {} to {}, ".format(self.min_atk, self.max_atk) + \
-               "Def: {} to {}, ".format(self.min_def, self.max_def) + \
-               "Sta: {} to {}, ".format(self.min_sta, self.max_sta) +\
-               "Quick Moves: {}, ".format(self.req_quick_move) + \
-               "Charge Moves: {}, ".format(self.req_charge_move) + \
-               "Move Sets: {}, ".format(self.req_moveset) + \
-               "Sizes: {}, ".format(self.sizes) + \
-               "Genders: {}, ".format(self.genders) + \
-               "Rating Atk: {} to {}, ".format(self.min_rating_attack, self.max_rating_attack) + \
-               "Rating Def: {} to {}, ".format(self.min_rating_defense, self.max_rating_defense) + \
-               "Ignore Missing: {} ".format(self.ignore_missing)
+        defaults = PokemonFilter.get_defaults()
+        parts = []
+        name_or_dist = super(PokemonFilter, self).to_string()
+        if name_or_dist:
+            parts.append(name_or_dist)
+        if self.min_cp != defaults["min_cp"] or self.max_cp != defaults["max_cp"]:
+            parts.append("CP: {} to {}".format(self.min_cp, self.max_cp))
+        if self.min_level != defaults["min_level"] or self.max_level != defaults["max_level"]:
+            parts.append("Lvl: {} to {}".format(self.min_level, self.max_level))
+        if self.min_iv != defaults["min_iv"] or self.max_iv != defaults["max_iv"]:
+            parts.append("IV: {}% to {}%".format(self.min_iv, self.max_iv))
+        if self.min_atk != defaults["min_atk"] or self.max_atk != defaults["max_atk"]:
+            parts.append("Atk: {} to {}".format(self.min_atk, self.max_atk))
+        if self.min_def != defaults["min_def"] or self.max_def != defaults["max_def"]:
+            parts.append("Def: {} to {}".format(self.min_def, self.max_def))
+        if self.min_sta != defaults["min_sta"] or self.max_sta != defaults["max_sta"]:
+            parts.append("Atk: {} to {}".format(self.min_sta, self.max_sta))
+        if self.req_quick_move is not None:
+            parts.append("Quick Moves: {}".format(self.req_quick_move))
+        if self.req_charge_move is not None:
+            parts.append("Charge Moves: {}".format(self.req_charge_move))
+        if self.req_moveset is not None:
+            parts.append("Move Sets: {}".format(self.req_moveset))
+        if self.sizes is not None:
+            parts.append("Sizes: {}".format(self.sizes))
+        if self.genders is not None:
+            parts.append("Genders: {}".format(self.genders))
+        if self.forms is not None:
+            parts.append("Forms: {}".format(self.forms))
+        if self.min_rating_attack != defaults['min_rating_attack'] or self.max_rating_attack != defaults['max_rating_attack']:
+            parts.append("Rating Atk: {} to {}".format(self.min_rating_attack, self.max_rating_attack))
+        if self.min_rating_defense != defaults['min_rating_defense'] or self.max_rating_defense != defaults['max_rating_defense']:
+            parts.append("Rating Def: {} to {}".format(self.min_rating_defense, self.max_rating_defense))
+        if self.ignore_missing != defaults["ignore_missing"]:
+            parts.append("Ignore Missing: {}".format(self.ignore_missing))
+        if not parts:
+            parts.append("any")
+        return ", ".join(parts)
+
+    @staticmethod
+    def get_defaults():
+        rtn = super(PokemonFilter, PokemonFilter).get_defaults()
+        rtn.update({
+            "ignore_missing": False,
+            "min_cp": 0, "max_cp": sys.maxint,
+            "min_level": 0, "max_level": 40,
+            "min_iv": 0.0, "max_iv": 100.0,
+            "min_atk": 0, "max_atk": 15,
+            "min_def": 0, "max_def": 15,
+            "min_sta": 0, "max_sta": 15,
+            "quick_move": None, "charge_move": None, "moveset": None,
+            "size": None,
+            "gender": None,
+            "form": None,
+            "min_rating_attack": "F", "max_rating_attack": "A",
+            "min_rating_defense": "F", "max_rating_defense": "A"
+        })
+        return rtn
 
     @staticmethod
     def create_moves_list(moves):
@@ -417,24 +521,16 @@ class PokemonFilter(Filter):
 class PokestopFilter(Filter):
 
     def __init__(self, settings, default, location):
-        self.min_dist = float(settings.pop('min_dist', None) or default['min_dist'])
-        self.max_dist = float(settings.pop('max_dist', None) or default['max_dist'])
+        super(PokestopFilter, self).__init__(settings, default, location)
 
         reject_leftover_parameters(settings, "Pokestop filter in {}".format(location))
-
-    def check_dist(self, dist):
-        return self.min_dist <= dist <= self.max_dist
-
-    def to_dict(self):
-        return {"min_dist": self.min_dist, "max_dist": self.max_dist}
 
 
 # GymFilter is used to determine when Gym notifications will be triggered.
 class GymFilter(Filter):
 
     def __init__(self, settings, default, location):
-        self.min_dist = float(settings.pop('min_dist', None) or default['min_dist'])
-        self.max_dist = float(settings.pop('max_dist', None) or default['max_dist'])
+        super(GymFilter, self).__init__(settings, default, location)
 
         # Check for 'To Team' list
         self.to_team = GymFilter.create_team_list(settings.pop('to_team'))  \
@@ -445,9 +541,6 @@ class GymFilter(Filter):
 
         reject_leftover_parameters(settings, "Gym filter in {}".format(location))
 
-    def check_dist(self, dist):
-        return self.min_dist <= dist <= self.max_dist
-
     def check_from_team(self, team_id):
         return team_id in self.from_team
 
@@ -455,10 +548,27 @@ class GymFilter(Filter):
         return team_id in self.to_team
 
     def to_dict(self):
-        return {
-            "to_team": self.to_team, "from_team": self.from_team,
-            "min_dist": self.min_dist, "max_dist": self.max_dist
-        }
+        rtn = super(GymFilter, self).to_dict()
+        rtn.update({
+            "to_team": self.to_team, "from_team": self.from_team
+        })
+        return rtn
+
+    def to_string(self):
+        parts = []
+        name_or_dist = super(GymFilter, self).to_string()
+        if name_or_dist:
+            parts.append(name_or_dist)
+        parts.append("Team(s) {} changes to Team(s) {}".format(self.from_team, self.to_team))
+        return ", ".join(parts)
+
+    @staticmethod
+    def get_defaults():
+        rtn = super(GymFilter, GymFilter).get_defaults()
+        rtn.update({
+            "to_team": {0, 1, 2, 3}, "from_team": {0, 1, 2, 3}
+        })
+        return rtn
 
     @staticmethod
     def create_team_list(settings):  # Create a set of Team ID #'s
