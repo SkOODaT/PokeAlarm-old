@@ -48,7 +48,9 @@ def load_pokemon_filters(settings):
         "quick_move": None, "charge_move": None, "moveset": None,
         "size": None,
         "gender": None,
-        "form": None
+        "form": None,
+        "min_rating_attack": "F", "max_rating_attack": "A",
+        "min_rating_defense": "F", "max_rating_defense": "A"
     }, 'default')
     default = default_filt.to_dict()
 
@@ -204,6 +206,11 @@ class PokemonFilter(Filter):
         self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
         self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
         self.req_moveset = PokemonFilter.create_moveset_list(settings.pop("moveset",  default['moveset']))
+        # Moveset Ratings
+        self.min_rating_attack = (settings.pop('min_rating_attack', None) or default['min_rating_attack']).upper()
+        self.max_rating_attack = (settings.pop('max_rating_attack', None) or default['max_rating_attack']).upper()
+        self.min_rating_defense = (settings.pop('min_rating_defense', None) or default['min_rating_defense']).upper()
+        self.max_rating_defense = (settings.pop('max_rating_defense', None) or default['max_rating_defense']).upper()
 
         reject_leftover_parameters(settings, "pokemon filter under '{}'".format(location))
 
@@ -274,6 +281,12 @@ class PokemonFilter(Filter):
             return True
         return form_id in self.forms
 
+    def check_rating_attack(self, rating_attack):
+        return self.min_rating_attack >= rating_attack >= self.max_rating_attack
+
+    def check_rating_defense(self, rating_defense):
+        return self.min_rating_defense >= rating_defense >= self.max_rating_defense
+
     # Convert this filter to a dict
     def to_dict(self):
         return {
@@ -289,6 +302,8 @@ class PokemonFilter(Filter):
             "size": self.sizes,
             "gender": self.genders,
             "form": self.forms,
+            "min_rating_attack": self.min_rating_attack, "max_rating_attack": self.max_rating_attack,
+            "min_rating_defense": self.min_rating_defense, "max_rating_defense": self.max_rating_defense,
             "ignore_missing": self.ignore_missing
         }
 
@@ -306,6 +321,8 @@ class PokemonFilter(Filter):
                "Move Sets: {}, ".format(self.req_moveset) + \
                "Sizes: {}, ".format(self.sizes) + \
                "Genders: {}, ".format(self.genders) + \
+               "Rating Atk: {} to {}, ".format(self.min_rating_attack, self.max_rating_attack) + \
+               "Rating Def: {} to {}, ".format(self.min_rating_defense, self.max_rating_defense) + \
                "Ignore Missing: {} ".format(self.ignore_missing)
 
     @staticmethod
