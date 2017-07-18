@@ -84,7 +84,9 @@ class RocketMap:
             'tiny_rat': '',
             'big_karp': '',
             'gmaps': get_gmaps_link(lat, lng),
-            'applemaps': get_applemaps_link(lat, lng)
+            'applemaps': get_applemaps_link(lat, lng),
+            'rating_attack': data.get('rating_attack'),
+            'rating_defense': data.get('rating_defense')
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
@@ -105,6 +107,11 @@ class RocketMap:
         # Todo: Remove this when monocle get's it's own standard
         if pkmn['form_id'] == 0:
             pkmn['form_id'] = '?'
+
+        rating_attack = pkmn['rating_attack']
+        pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
+        rating_defense = pkmn['rating_defense']
+        pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
 
         return pkmn
 
