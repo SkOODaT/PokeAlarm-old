@@ -294,6 +294,8 @@ class Manager(object):
                     self.process_egg(obj)
                 elif kind == "raid":
                     self.process_raid(obj)
+                elif kind == "location":
+                    self.process_location(obj)
                 else:
                     log.error("!!! Manager does not support {} objects!".format(kind))
                 log.debug("Finished processing object {} with id {}".format(obj['type'], obj['id']))
@@ -996,6 +998,13 @@ class Manager(object):
             else:
                 log.debug("{} is not in geofence {}".format(name, gf.name))
         return 'unknown'
+
+    def process_location(self, loc):
+        lat = loc['latitude']
+        lon = loc['longitude']
+        loc = "{}, {}".format(lat, lon)
+        log.info("Got new location via webhook: {}".format(loc))
+        self.__latlng = [lat, lon]
 
     # Retrieve optional requirements
     def add_optional_travel_arguments(self, info):
