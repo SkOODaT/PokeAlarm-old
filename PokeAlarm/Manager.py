@@ -62,6 +62,9 @@ class Manager(object):
         self.__alarms = []
         self.load_alarms_file(get_path(alarm_file), int(max_attempts))
 
+        # Location of the cache file
+        self.__cache_path = get_path('cache')
+
         # Initialize the queue and start the process
         self.__queue = multiprocessing.Queue()
         self.__process = None
@@ -275,14 +278,15 @@ class Manager(object):
     # Main event handler loop
     def run(self):
         self.setup_in_process()
+        self.update_cache()
         last_clean = datetime.utcnow()
         while True:  # Run forever and ever
             # Get next object to process
             obj = self.__queue.get(block=True)
             # Clean out visited every 3 minutes
             if datetime.utcnow() - last_clean > timedelta(minutes=3):
-                log.debug("Cleaning history...")
                 self.clean_hist()
+                self.update_cache()
                 last_clean = datetime.utcnow()
             try:
                 kind = obj['type']
@@ -308,6 +312,7 @@ class Manager(object):
 
     # Clean out the expired objects from histories (to prevent oversized sets)
     def clean_hist(self):
+        log.debug("Cleaning history...")
         for dict_ in (self.__pokemon_hist, self.__pokestop_hist):
             old = []
             for id_ in dict_:  # Gather old events
@@ -323,6 +328,23 @@ class Manager(object):
                 old.append(id_)
         for id_ in old:  # Remove expired raids
             del self.__raid_hist[id_]
+
+    # Write the cached info to a file
+    def update_cache(self):
+        log.debug("Updating gym_details cache...")
+        log.debug(self.__gym_info)
+        try:
+            # Pull info from the cache and update it with our own
+            with open(os.path.join(self.__cache_path, 'gym_details.json'), 'r') as f:
+                cache = json.loads(f.read())
+            for key in cache:
+                self.__gym_info[key] = cache[key]
+            # Now dump our new cache
+            cache = json.dumps(self.__gym_info, indent=4, sort_keys=True)
+            with open(os.path.join(self.__cache_path, 'gym_details.json'), 'w') as f:
+                f.write(cache)
+        except Exception as e:
+            log.warning("Attempting to save cached gym_details failed: {}".format(e))
 
     # Check if a given pokemon is active on a filter
     def check_pokemon_filter(self, filters, pkmn, dist):
@@ -722,7 +744,7 @@ class Manager(object):
         gym_id = gym['id']
 
         # Update Gym details (if they exist)
-        if gym_id not in self.__gym_info or gym['name'] != 'unknown':
+        if gym_id not in self.__gym_info and gym['name'] != 'unknown':
             self.__gym_info[gym_id] = {
                 "name": gym['name'],
                 "description": gym['description'],
@@ -810,12 +832,12 @@ class Manager(object):
         else:
             log.debug("Gym inside geofences was not checked because no geofences were set.")
 
-        gym_info = self.__gym_info.get(gym_id, {})
+        gym_details = self.__gym_info.get(gym_id, {})
 
         gym.update({
-            "gym_name": self.__gym_info.get(gym_id, {}).get('name', 'unknown'),
-            "gym_description": self.__gym_info.get(gym_id, {}).get('description', 'unknown'),
-            "gym_url": self.__gym_info.get(gym_id, {}).get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
+            "gym_name": gym_details.get('name', 'unknown'),
+            "gym_description": gym_details.get('description', 'unknown'),
+            "gym_url": gym_details.get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
             "dist": get_dist_as_str(dist),
             'dir': get_cardinal_dir([lat, lng], self.__latlng),
             'new_team': cur_team,
@@ -892,12 +914,13 @@ class Manager(object):
 
         time_str = get_time_as_str(egg['raid_end'], self.__timezone)
         start_time_str = get_time_as_str(egg['raid_begin'], self.__timezone)
-        gym_info = self.__gym_info.get(gym_id, {})
+
+        gym_details = self.__gym_info.get(gym_id, {})
 
         egg.update({
-            "gym_name": self.__gym_info.get(gym_id, {}).get('name', 'unknown'),
-            "gym_description": self.__gym_info.get(gym_id, {}).get('description', 'unknown'),
-            "gym_url": self.__gym_info.get(gym_id, {}).get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
+            "gym_name": gym_details.get('name', 'unknown'),
+            "gym_description": gym_details.get('description', 'unknown'),
+            "gym_url": gym_details.get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
             'time_left': time_str[0],
             '12h_time': time_str[1],
             '24h_time': time_str[2],
@@ -1001,13 +1024,14 @@ class Manager(object):
 
         time_str = get_time_as_str(raid['raid_end'], self.__timezone)
         start_time_str = get_time_as_str(raid['raid_begin'], self.__timezone)
-        gym_info = self.__gym_info.get(gym_id, {})
+
+        gym_details = self.__gym_info.get(gym_id, {})
 
         raid.update({
             'pkmn': name,
-            "gym_name": self.__gym_info.get(gym_id, {}).get('name', 'unknown'),
-            "gym_description": self.__gym_info.get(gym_id, {}).get('description', 'unknown'),
-            "gym_url": self.__gym_info.get(gym_id, {}).get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
+            "gym_name": gym_details.get('name', 'unknown'),
+            "gym_description": gym_details.get('description', 'unknown'),
+            "gym_url": gym_details.get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
             'time_left': time_str[0],
             '12h_time': time_str[1],
             '24h_time': time_str[2],
