@@ -119,7 +119,11 @@ class RocketMap:
             'id': data['pokestop_id'],
             'expire_time':  datetime.utcfromtimestamp(data['lure_expiration']),
             'lat': float(data['latitude']),
-            'lng': float(data['longitude'])
+            'lng': float(data['longitude']),
+            'name': check_for_none(str, data.get('name'), '?'),
+            'description': check_for_none(str, data.get('description'), '?'),
+            'url': check_for_none(str, data.get('url'), ''),
+            'deployer': check_for_none(str, data.get('deployer'), '?')
         }
         stop['gmaps'] = get_gmaps_link(stop['lat'], stop['lng'])
         stop['applemaps'] = get_applemaps_link(stop['lat'], stop['lng'])
