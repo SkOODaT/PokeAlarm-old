@@ -89,7 +89,7 @@ def geofency_wh():
     return "Can only process location entries, not exits.", 400
 
 
-# Thread used to distribute the data into various processes (for PokemonGo-Map format)
+# Thread used to distribute the data into various processes (for RocketMap format)
 def manage_webhook_data(queue):
     while True:
         if queue.qsize() > 300:
