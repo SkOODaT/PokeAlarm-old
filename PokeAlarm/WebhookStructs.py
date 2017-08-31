@@ -6,7 +6,7 @@ import traceback
 # 3rd Party Imports
 # Local Imports
 from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
-    get_move_energy, get_pokemon_gender, get_pokemon_size, get_applemaps_link
+    get_move_energy, get_pokemon_gender, get_pokemon_size, get_pkmn_name, get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
 
@@ -76,6 +76,9 @@ class RocketMap:
             'height': check_for_none(float, data.get('height'), 'unkn'),
             'weight': check_for_none(float, data.get('weight'), 'unkn'),
             'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
+            'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), '?'),
+            'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), '?'),
+            'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), '?'),
             'form_id': check_for_none(int, data.get('form'), '?'),
             'size': 'unknown',
             'tiny_rat': '',
@@ -83,7 +86,8 @@ class RocketMap:
             'gmaps': get_gmaps_link(lat, lng),
             'applemaps': get_applemaps_link(lat, lng),
             'rating_attack': data.get('rating_attack'),
-            'rating_defense': data.get('rating_defense')
+            'rating_defense': data.get('rating_defense'),
+            'previous_id': check_for_none(int, data.get('previous_id'), '')
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
@@ -105,6 +109,9 @@ class RocketMap:
         pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
         rating_defense = pkmn['rating_defense']
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
+
+        if pkmn['previous_id']:
+            pkmn['previous_id'] = '(' + get_pkmn_name(int(pkmn['previous_id'])) + ')'
 
         return pkmn
 
