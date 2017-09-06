@@ -110,6 +110,21 @@ class RocketMap:
         rating_defense = pkmn['rating_defense']
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
 
+        if pkmn['catch_prob_1'] != '?':
+            pkmn['catch_prob_1'] = int(round((pkmn['catch_prob_1'] * 100), 3))
+        else:
+            pkmn['catch_prob_1'] = '?'
+
+        if pkmn['catch_prob_2'] != '?':
+            pkmn['catch_prob_2'] = int(round((pkmn['catch_prob_2'] * 100), 3))
+        else:
+            pkmn['catch_prob_2'] = '?'
+
+        if pkmn['catch_prob_3'] != '?':
+            pkmn['catch_prob_3'] = int(round((pkmn['catch_prob_3'] * 100), 3))
+        else:
+            pkmn['catch_prob_3'] = '?'
+
         if pkmn['previous_id']:
             pkmn['previous_id'] = '(' + get_pkmn_name(int(pkmn['previous_id'])) + ')'
 

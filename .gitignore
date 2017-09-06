@@ -4,5 +4,6 @@
 *.ini
 *.txt
 !locales/*.json
+!cache/*.*
 *.example
 *.json
