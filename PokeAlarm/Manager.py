@@ -517,9 +517,10 @@ class Manager(object):
 
         return passed
 
-    # Check if a raid filter will pass for given raid
+    # Check if an egg filter will pass for given egg
     def check_egg_filter(self, settings, egg):
         level = egg['raid_level']
+        dist = egg['dist']
 
         if level < settings['min_level']:
             if self.__quiet is False:
@@ -531,6 +532,18 @@ class Manager(object):
             if self.__quiet is False:
                 log.info("Egg {} is higher ({}) than max ({}) level, ignore"
                          .format(egg['id'], level, settings['max_level']))
+            return False
+
+        if dist < settings['min_dist']:
+            if self.__quiet is False:
+                log.info("Egg {} distance ({}) is less than min ({}), ignore"
+                         .format(egg['id'], dist, settings['min_dist']))
+            return False
+
+        if dist > settings['max_dist']:
+            if self.__quiet is False:
+                log.info("Egg {} distance ({}) is higher than max ({}), ignore"
+                         .format(egg['id'], dist, settings['max_dist']))
             return False
 
         return True
@@ -847,6 +860,7 @@ class Manager(object):
 
         lat, lng = egg['lat'], egg['lng']
         dist = get_earth_dist([lat, lng], self.__location)
+        egg['dist'] = dist
 
         # Check if raid is in geofences
         egg['geofence'] = self.check_geofences('Raid', lat, lng)
