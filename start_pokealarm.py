@@ -61,6 +61,34 @@ def accept_webhook():
     return "OK"  # request ok
 
 
+@app.route('/geofency', methods=['POST'])
+def geofency_wh():
+    name = request.form.get('name')
+    entry = request.form.get('entry')
+
+    # trigger only when entering locations
+    if entry == '1':
+        lat = request.form.get('latitude', type=float)
+        lng = request.form.get('longitude', type=float)
+        if not (lat and lng):
+            warning = 'Invalid location for "{}": {}, {}'.format(name, lat, lng)
+            log.warning(warning)
+            return warning, 400
+        else:
+            log.info('Changing map location to "{}" at {}, {}'.format(name, lat, lng))
+            data = {
+                'type': 'location',
+                'message': {
+                    'latitude': lat,
+                    'longitude': lng
+                }
+            }
+            data_queue.put(data)
+            return "OK"
+
+    return "Can only process location entries, not exits.", 400
+
+
 # Thread used to distribute the data into various processes (for RocketMap format)
 def manage_webhook_data(queue):
     while True:
