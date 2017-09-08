@@ -174,10 +174,13 @@ def load_egg_section(settings):
     egg = {
         "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False),
         "min_level": int(settings.pop('min_level', 0) or 0),
-        "max_level": int(settings.pop('max_level', 10) or 10)
+        "max_level": int(settings.pop('max_level', 10) or 10),
+        "min_dist": float(settings.pop('min_dist', 0) or 0),
+        "max_dist": float(settings.pop('max_dist', 'inf') or 'inf')
     }
 
-    log.debug("Report eggs between level {} and {}".format(egg['min_level'], egg['max_level']))
+    log.debug("Report eggs level {}-{}, distance {}-{}".format(egg['min_level'], egg['max_level'], egg['min_dist'],
+                                                               egg['max_dist']))
 
     return egg
 
