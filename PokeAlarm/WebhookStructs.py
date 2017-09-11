@@ -84,7 +84,12 @@ class RocketMap:
             'tiny_rat': '',
             'big_karp': '',
             'gmaps': get_gmaps_link(lat, lng),
-            'applemaps': get_applemaps_link(lat, lng)
+            'applemaps': get_applemaps_link(lat, lng),
+            'rating_attack': data.get('rating_attack'),
+            'rating_defense': data.get('rating_defense'),
+            'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), 'unkn'),
+            'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), 'unkn'),
+            'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn')
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
@@ -105,6 +110,18 @@ class RocketMap:
         # Todo: Remove this when monocle get's it's own standard
         if pkmn['form_id'] == 0:
             pkmn['form_id'] = '?'
+
+        rating_attack = pkmn['rating_attack']
+        pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
+        rating_defense = pkmn['rating_defense']
+        pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
+        
+        if pkmn['catch_prob_1'] != 'unkn':
+            pkmn['catch_prob_1'] = "{:.1f}".format(pkmn['catch_prob_1'] * 100)
+        if pkmn['catch_prob_2'] != 'unkn':
+            pkmn['catch_prob_2'] = "{:.1f}".format(pkmn['catch_prob_2'] * 100)
+        if pkmn['catch_prob_3'] != 'unkn':
+            pkmn['catch_prob_3'] = "{:.1f}".format(pkmn['catch_prob_3'] * 100)
 
         return pkmn
 
