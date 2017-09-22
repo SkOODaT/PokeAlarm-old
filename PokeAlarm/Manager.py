@@ -1041,7 +1041,13 @@ class Manager(object):
 
         gym_details = self.__gym_info.get(gym_id, {})
 
+        team = 'unknown'
+        team_id = raid.get('team_id')
+        if team_id is not None:
+            team = self.__team_name[team_id]
+
         raid.update({
+            'team': team,
             'pkmn': name,
             "gym_name": gym_details.get('name', 'unknown'),
             "gym_description": gym_details.get('description', 'unknown'),

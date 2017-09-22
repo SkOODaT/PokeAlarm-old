@@ -232,9 +232,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id',  data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         raid = {
             'type': 'raid',
             'id': id_,
+            'team_id': team_id,
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
             'quick_id': quick_id,
