@@ -111,19 +111,11 @@ class RocketMap:
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
 
         if pkmn['catch_prob_1'] != '?':
-            pkmn['catch_prob_1'] = int(round((pkmn['catch_prob_1'] * 100), 3))
-        else:
-            pkmn['catch_prob_1'] = '?'
-
+            pkmn['catch_prob_1'] = "{:.1f}".format(pkmn['catch_prob_1'] * 100)
         if pkmn['catch_prob_2'] != '?':
-            pkmn['catch_prob_2'] = int(round((pkmn['catch_prob_2'] * 100), 3))
-        else:
-            pkmn['catch_prob_2'] = '?'
-
+            pkmn['catch_prob_2'] = "{:.1f}".format(pkmn['catch_prob_2'] * 100)
         if pkmn['catch_prob_3'] != '?':
-            pkmn['catch_prob_3'] = int(round((pkmn['catch_prob_3'] * 100), 3))
-        else:
-            pkmn['catch_prob_3'] = '?'
+            pkmn['catch_prob_3'] = "{:.1f}".format(pkmn['catch_prob_3'] * 100)
 
         if pkmn['previous_id']:
             pkmn['previous_id'] = '(' + get_pkmn_name(int(pkmn['previous_id'])) + ')'
@@ -248,9 +240,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id',  data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         raid = {
             'type': 'raid',
             'id': id_,
+            'team_id': team_id,
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
             'quick_id': quick_id,
