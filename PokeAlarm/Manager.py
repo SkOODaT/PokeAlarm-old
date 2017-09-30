@@ -930,6 +930,7 @@ class Manager(object):
         start_time_str = get_time_as_str(egg['raid_begin'], self.__timezone)
 
         gym_details = self.__gym_info.get(gym_id, {})
+        team_id = egg['team_id']
 
         egg.update({
             "gym_name": gym_details.get('name', 'unknown'),
@@ -942,7 +943,8 @@ class Manager(object):
             'begin_12h_time': start_time_str[1],
             'begin_24h_time': start_time_str[2],
             "dist": get_dist_as_str(dist),
-            'dir': get_cardinal_dir([lat, lng], self.__latlng)
+            'dir': get_cardinal_dir([lat, lng], self.__latlng),
+            'team_id': self.__team_name[team_id]
         })
 
         threads = []
@@ -998,6 +1000,7 @@ class Manager(object):
 
         quick_id = raid['quick_id']
         charge_id = raid['charge_id']
+        team_id = raid['team_id']
 
         #  check filters for pokemon
         name = self.__pokemon_name[pkmn_id]
@@ -1041,11 +1044,6 @@ class Manager(object):
 
         gym_details = self.__gym_info.get(gym_id, {})
 
-        team = 'unknown'
-        team_id = raid.get('team_id')
-        if team_id is not None:
-            team = self.__team_name[team_id]
-
         raid.update({
             'team': team,
             'pkmn': name,
@@ -1061,7 +1059,8 @@ class Manager(object):
             "dist": get_dist_as_str(dist),
             'dir': get_cardinal_dir([lat, lng], self.__latlng),
             'quick_move': self.__move_name.get(quick_id, 'unknown'),
-            'charge_move': self.__move_name.get(charge_id, 'unknown')
+            'charge_move': self.__move_name.get(charge_id, 'unknown'),
+            'team_id': self.__team_name[team_id]
         })
 
         threads = []
