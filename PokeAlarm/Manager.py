@@ -297,6 +297,8 @@ class Manager(object):
                     self.process_pokestop(obj)
                 elif kind == "gym":
                     self.process_gym(obj)
+                elif kind == "gym_details":
+                    self.process_gym_details(obj)
                 elif kind == 'egg':
                     self.process_egg(obj)
                 elif kind == "raid":
@@ -874,6 +876,120 @@ class Manager(object):
         for thread in threads:
             thread.join()
 
+    def process_gym_details(self, gym_details):
+        if self.__gym_settings['enabled'] is False:
+            log.debug("Gym ignored: notifications are disabled.")
+            return
+
+        # Extract some basic information
+        gym_id = gym_details['id']
+        to_team_id = gym_details['new_team_id']
+        from_team_id = self.__gym_hist.get(gym_id)
+
+        # Doesn't look like anything to me
+        if to_team_id == from_team_id:
+            log.debug("Gym ignored: no change detected")
+            return
+        # Ignore changes to neutral
+        if self.__gym_settings['ignore_neutral'] and to_team_id == 0:
+            log.debug("Gym update ignored: changed to neutral")
+            return
+        # Update gym's last known team
+        self.__gym_hist[gym_id] = to_team_id
+        # Ignore first time updates
+        if from_team_id is None:
+            log.debug("Gym update ignored: first time seeing this gym")
+            return
+
+        # Get some more info out used to check filters
+        lat, lng = gym_details['lat'], gym_details['lng']
+        dist = get_earth_dist([lat, lng], self.__latlng)
+        cur_team = self.__team_name[to_team_id]
+        old_team = self.__team_name[from_team_id]
+
+        filters = self.__gym_settings['filters']
+        passed = False
+        for filt_ct in range(len(filters)):
+            filt = filters[filt_ct]
+            # Check the distance from the set location
+            if dist != 'unkn':
+                if filt.check_dist(dist) is False:
+                    if self.__quiet is False:
+                        log.info("Gym rejected: distance ({:.2f}) was not in range" +
+                                 " {:.2f} to {:.2f} (F #{})".format(dist, filt.min_dist, filt.max_dist, filt_ct))
+                    continue
+            else:
+                log.debug("Pokestop dist was not checked because the manager has no location set.")
+
+            # Check the old team
+            if filt.check_from_team(from_team_id) is False:
+                if self.__quiet is False:
+                    log.info("Gym rejected: {} as old team is not correct (F #{})".format(old_team, filt_ct))
+                continue
+            # Check the new team
+            if filt.check_to_team(to_team_id) is False:
+                if self.__quiet is False:
+                    log.info("Gym rejected: {} as current team is not correct (F #{})".format(cur_team, filt_ct))
+                continue
+
+            # Nothing left to check, so it must have passed
+            passed = True
+            log.debug("Gym passed filter #{}".format(filt_ct))
+            break
+
+        if not passed:
+            return
+
+        # Check the geofences
+        gym['geofence'] = self.check_geofences('Gym', lat, lng)
+        if len(self.__geofences) > 0 and gym['geofence'] == 'unknown':
+            log.info("Gym rejected: not inside geofence(s)")
+            return
+
+        # Check if in geofences
+        if len(self.__geofences) > 0:
+            inside = False
+            for gf in self.__geofences:
+                inside |= gf.contains(lat, lng)
+            if inside is False:
+                if self.__quiet is False:
+                    log.info("Gym update ignored: located outside geofences.")
+                return
+        else:
+            log.debug("Gym inside geofences was not checked because no geofences were set.")
+
+        gym_details.update({
+            'name': gym_details['name'],
+            "dist": get_dist_as_str(dist),
+            'dir': get_cardinal_dir([lat, lng], self.__latlng),
+            'new_team': cur_team,
+            'old_team': old_team,
+            'defenders': gym_details['defenders'],
+            'description': gym_details['description'],
+            'gurl': gym_details['url'],
+            'points': gym_details['points'],
+        })
+        self.add_optional_travel_arguments(gym_details)
+
+        if self.__quiet is False:
+            log.info("Gym ({}) notification has been triggered!".format(gym_id))
+
+        threads = []
+        # Spawn notifications in threads so they can work in background
+        for alarm in self.__alarms:
+            threads.append(gevent.spawn(alarm.gym_alert, gym_details))
+            gevent.sleep(0)  # explict context yield
+
+        for thread in threads:
+            thread.join()
+
+    def process_location(self, loc):
+        lat = loc['latitude']
+        lon = loc['longitude']
+        loc = "{}, {}".format(lat, lon)
+        log.info("Got new location via webhook: {}".format(loc))
+        self.__latlng = [lat, lon]
+
     def process_egg(self, egg):
         # Quick check for enabled
         if self.__egg_settings['enabled'] is False:
@@ -1045,7 +1161,6 @@ class Manager(object):
         gym_details = self.__gym_info.get(gym_id, {})
 
         raid.update({
-            'team': team,
             'pkmn': name,
             "gym_name": gym_details.get('name', 'unknown'),
             "gym_description": gym_details.get('description', 'unknown'),
