@@ -27,10 +27,10 @@ class RocketMap:
                 return RocketMap.pokemon(data.get('message'))
             elif kind == 'pokestop':
                 return RocketMap.pokestop(data.get('message'))
-            #elif kind == 'gym':
-            #    return RocketMap.gym(data.get('message'))
+            #elif kind == 'gym_OLD':
+            #    return RocketMap.gym_OLD(data.get('message'))
             elif kind == "gym_details":
-                return RocketMap.gym_details(data.get('message'))
+                return RocketMap.gym_info(data.get('message'))
             elif kind == 'raid':
                 return RocketMap.egg_or_raid(data.get('message'))
             elif kind in ['captcha', 'scheduler']:  # Unsupported Webhooks
@@ -146,9 +146,9 @@ class RocketMap:
         return stop
 
     @staticmethod
-    def gym(data):
+    def gym_OLD(data):
         log.debug("Converting to gym: \n {}".format(data))
-        gym = {
+        gym_OLD = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
             "new_team_id": int(data.get('team_id',  data.get('team'))),
@@ -163,22 +163,22 @@ class RocketMap:
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
         gym['applemaps'] = get_applemaps_link(gym['lat'], gym['lng'])
-        return gym
+        return gym_OLD
 
     @staticmethod
-    def gym_details(data):
+    def gym_info(data):
         log.debug("Converting to gym-details: \n {}".format(data))
         defenders = ""
         for pokemon in data.get('pokemon'):
             defenders += "[{0} CP: {1}/{2}] [Trainer: {3} Lv: {4}]\n".format(get_pkmn_name(pokemon['pokemon_id']), pokemon['cp_decayed'], pokemon['cp'], pokemon['trainer_name'], pokemon['trainer_level'])
-        gym_details = {
+        gym_info = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
             'new_team_id': int(data.get('team_id',  data.get('team'))),
             'points': str(data.get('total_cp')),
             'guard_pkmn_id': get_pkmn_name(check_for_none(int, data.get('guard_pokemon_id'), '?')),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
-            'is_in_battle': check_for_none(int, data.get('is_in_battle'), '?'),
+            'is_in_battle': check_for_none(str, data.get('is_in_battle'), '?'),
             'defenders': defenders,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
@@ -186,17 +186,13 @@ class RocketMap:
             'description': check_for_none(str, data.get('description'), '?'),
             'url': check_for_none(str, data.get('url'), '')
         }
-        #log.warning(gym_details['guard_pkmn_id'])
-        # log.warning("PARSED GYM INFORMATION: \n {}".format(gym_details))
-        gym_details['gmaps'] = get_gmaps_link(gym_details['lat'], gym_details['lng'])
-        gym_details['applemaps'] = get_applemaps_link(gym_details['lat'], gym_details['lng'])
 
-        if gym_details['is_in_battle'] == 1:
-            gym_details['is_in_battle'] = '[IN BATTLE]'
-        else:
-            gym_details['is_in_battle'] = ''
+        #log.warning(gym_info['guard_pkmn_id'])
+        #log.warning("PARSED GYM INFORMATION: \n {}".format(gym_info))
+        gym_info['gmaps'] = get_gmaps_link(gym_info['lat'], gym_info['lng'])
+        gym_info['applemaps'] = get_applemaps_link(gym_info['lat'], gym_info['lng'])
 
-        return gym_details
+        return gym_info
 
     @staticmethod
     def location(data):

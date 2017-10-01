@@ -296,9 +296,9 @@ class Manager(object):
                 elif kind == "pokestop":
                     self.process_pokestop(obj)
                 elif kind == "gym":
-                    self.process_gym(obj)
+                    self.process_gym_info(obj)
                 elif kind == "gym_details":
-                    self.process_gym_details(obj)
+                    self.process_gym_info(obj)
                 elif kind == 'egg':
                     self.process_egg(obj)
                 elif kind == "raid":
@@ -625,7 +625,7 @@ class Manager(object):
         # Check that the filter is even set
         if pkmn_id not in self.__pokemon_settings['filters']:
             if self.__quiet is False:
-                log.info("{} ignored: no filters are set".format(name))
+                log.debug("{} ignored: no filters are set".format(name))
             return
 
         # Extract some useful info that will be used in the filters
@@ -755,7 +755,7 @@ class Manager(object):
         for thread in threads:
             thread.join()
 
-    def process_gym(self, gym):
+    def process_gym_OLD(self, gym_OLD):
         gym_id = gym['id']
 
         # Update Gym details (if they exist)
@@ -876,33 +876,47 @@ class Manager(object):
         for thread in threads:
             thread.join()
 
-    def process_gym_details(self, gym_details):
+    def process_gym_info(self, gym_info):
+        gym_id = gym_info['id']
+
+        # Update Gym details (if they exist)
+        if gym_id not in self.__gym_info and gym_info['name'] != 'unknown':
+            self.__gym_info[gym_id] = {
+                "name": gym_info['name'],
+                "description": gym_info['description'],
+                "url": gym_info['url']
+            }
+
         if self.__gym_settings['enabled'] is False:
             log.debug("Gym ignored: notifications are disabled.")
             return
 
         # Extract some basic information
-        gym_id = gym_details['id']
-        to_team_id = gym_details['new_team_id']
+        gym_id = gym_info['id']
+        to_team_id = gym_info['new_team_id']
         from_team_id = self.__gym_hist.get(gym_id)
 
+        if gym_info['is_in_battle'] == "True":
+            log.info("%s Gym under attack!", gym_info['is_in_battle'])
+
         # Doesn't look like anything to me
-        if to_team_id == from_team_id:
-            log.debug("Gym ignored: no change detected")
+        if to_team_id == from_team_id and gym_info['is_in_battle'] == "False":
+            log.info("Gym ignored: no change detected")
             return
         # Ignore changes to neutral
-        if self.__gym_settings['ignore_neutral'] and to_team_id == 0:
-            log.debug("Gym update ignored: changed to neutral")
+        if self.__gym_settings['ignore_neutral'] and to_team_id == 0 and gym_info['is_in_battle'] == "False":
+            log.info("Gym update ignored: changed to neutral")
             return
         # Update gym's last known team
         self.__gym_hist[gym_id] = to_team_id
         # Ignore first time updates
-        if from_team_id is None:
-            log.debug("Gym update ignored: first time seeing this gym")
+        if from_team_id is None: #and gym_info['is_in_battle'] == "False":
+            log.info("Gym update ignored: first time seeing this gym")
             return
 
+
         # Get some more info out used to check filters
-        lat, lng = gym_details['lat'], gym_details['lng']
+        lat, lng = gym_info['lat'], gym_info['lng']
         dist = get_earth_dist([lat, lng], self.__latlng)
         cur_team = self.__team_name[to_team_id]
         old_team = self.__team_name[from_team_id]
@@ -919,7 +933,7 @@ class Manager(object):
                                  " {:.2f} to {:.2f} (F #{})".format(dist, filt.min_dist, filt.max_dist, filt_ct))
                     continue
             else:
-                log.debug("Pokestop dist was not checked because the manager has no location set.")
+                log.debug("Gym dist was not checked because the manager has no location set.")
 
             # Check the old team
             if filt.check_from_team(from_team_id) is False:
@@ -934,15 +948,15 @@ class Manager(object):
 
             # Nothing left to check, so it must have passed
             passed = True
-            log.debug("Gym passed filter #{}".format(filt_ct))
+            log.info("Gym passed filter #{}".format(filt_ct))
             break
 
         if not passed:
             return
 
         # Check the geofences
-        gym['geofence'] = self.check_geofences('Gym', lat, lng)
-        if len(self.__geofences) > 0 and gym['geofence'] == 'unknown':
+        gym_info['geofence'] = self.check_geofences('Gym', lat, lng)
+        if len(self.__geofences) > 0 and gym_info['geofence'] == 'unknown':
             log.info("Gym rejected: not inside geofence(s)")
             return
 
@@ -958,18 +972,33 @@ class Manager(object):
         else:
             log.debug("Gym inside geofences was not checked because no geofences were set.")
 
-        gym_details.update({
-            'name': gym_details['name'],
+        gym_details = self.__gym_info.get(gym_id, {})
+
+        if gym_info['is_in_battle'] == 'True':
+            gym_info['is_in_battle'] = '[' + cur_team+ ']' + ' Gym In Battle!'
+            teamStr = ''
+        else:
+            gym_info['is_in_battle'] = ''
+            teamStr = '[' + old_team + '] Gym Changed To [' + cur_team + ']'
+
+        gym_info.update({
+            "gym_name": gym_details.get('name', '?'),
+            "gym_description": gym_details.get('description', '?'),
+            "gym_url": gym_details.get('url', 'https://raw.githubusercontent.com/kvangent/PokeAlarm/master/icons/gym_0.png'),
             "dist": get_dist_as_str(dist),
             'dir': get_cardinal_dir([lat, lng], self.__latlng),
             'new_team': cur_team,
+            'new_team_id': to_team_id,
             'old_team': old_team,
-            'defenders': gym_details['defenders'],
-            'description': gym_details['description'],
-            'gurl': gym_details['url'],
-            'points': gym_details['points'],
+            'old_team_id': from_team_id,
+            'new_team_leader': self.__leader[to_team_id],
+            'old_team_leader': self.__leader[from_team_id],
+            'defenders': gym_info['defenders'],
+            'points': gym_info['points'],
+            'is_in_battle': gym_info['is_in_battle'],
+            'teamStr': teamStr,
         })
-        self.add_optional_travel_arguments(gym_details)
+        self.add_optional_travel_arguments(gym_info)
 
         if self.__quiet is False:
             log.info("Gym ({}) notification has been triggered!".format(gym_id))
@@ -977,7 +1006,7 @@ class Manager(object):
         threads = []
         # Spawn notifications in threads so they can work in background
         for alarm in self.__alarms:
-            threads.append(gevent.spawn(alarm.gym_alert, gym_details))
+            threads.append(gevent.spawn(alarm.gym_alert, gym_info))
             gevent.sleep(0)  # explict context yield
 
         for thread in threads:
