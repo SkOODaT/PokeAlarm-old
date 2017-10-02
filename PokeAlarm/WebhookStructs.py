@@ -6,7 +6,7 @@ import traceback
 # 3rd Party Imports
 # Local Imports
 from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
-    get_move_energy, get_pokemon_gender, get_pokemon_size, get_pkmn_name, get_applemaps_link
+    get_move_energy, get_pokemon_gender, get_pokemon_size, get_pokemon_size_full, get_pkmn_name, get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
 
@@ -75,8 +75,8 @@ class RocketMap:
             'charge_dps': get_move_dps(charge_id),
             'charge_duration': get_move_duration(charge_id),
             'charge_energy': get_move_energy(charge_id),
-            'height': check_for_none(float, data.get('height'), 'unkn'),
-            'weight': check_for_none(float, data.get('weight'), 'unkn'),
+            'height': check_for_none(float, data.get('height'), '?'),
+            'weight': check_for_none(float, data.get('weight'), '?'),
             'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
             'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), '?'),
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), '?'),
@@ -89,23 +89,25 @@ class RocketMap:
             'applemaps': get_applemaps_link(lat, lng),
             'rating_attack': data.get('rating_attack'),
             'rating_defense': data.get('rating_defense'),
-            'previous_id': check_for_none(int, data.get('previous_id'), '')
+            'previous_id': check_for_none(int, data.get('previous_id'), ''),
+            'size_full': '?'
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
         else:
             pkmn['atk'], pkmn['def'], pkmn['sta'] = '?', '?', '?'
 
-        if pkmn['height'] != 'unkn' or pkmn['weight'] != 'unkn':
+        if pkmn['height'] != '?' or pkmn['weight'] != '?':
             pkmn['size'] = get_pokemon_size(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
+            pkmn['size_full'] = get_pokemon_size_full(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
             pkmn['height'] = "{:.2f}".format(pkmn['height'])
             pkmn['weight'] = "{:.2f}".format(pkmn['weight'])
 
-        if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'tiny':
-            pkmn['tiny_rat'] = 'tiny'
+        if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'T':
+            pkmn['tiny_rat'] = 'Tiny'
 
-        if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'big':
-            pkmn['big_karp'] = 'big'
+        if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'B':
+            pkmn['big_karp'] = 'Big'
 
         rating_attack = pkmn['rating_attack']
         pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
