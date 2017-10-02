@@ -172,7 +172,8 @@ class RocketMap:
         log.debug("Converting to gym-details: \n {}".format(data))
         defenders = ""
         for pokemon in data.get('pokemon'):
-            defenders += "[{0} CP: {1}/{2}] [Trainer: {3} Lv: {4}]\n".format(get_pkmn_name(pokemon['pokemon_id']), pokemon['cp_decayed'], pokemon['cp'], pokemon['trainer_name'], pokemon['trainer_level'])
+            pokemoniv = float(((pokemon['iv_attack'] + pokemon['iv_defense'] + pokemon['iv_stamina']) * 100) / float(45))
+            defenders += "[{0} Lv:{1}]\n[{2}X{3} ({4}% {5}/{6}/{7}) CP: {8}/{9} {10}]\n".format(pokemon['trainer_name'], pokemon['trainer_level'], get_pkmn_name(pokemon['pokemon_id']), pokemon['num_upgrades'], "{:.0f}".format(pokemoniv), pokemon['iv_attack'], pokemon['iv_stamina'], pokemon['iv_defense'], pokemon['cp_decayed'], pokemon['cp'], datetime.fromtimestamp(pokemon['deployment_time']).strftime('%Y/%m/%d %I:%M%p'))
         gym_info = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
