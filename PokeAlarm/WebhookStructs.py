@@ -81,7 +81,7 @@ class RocketMap:
             'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), '?'),
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), '?'),
             'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), '?'),
-            'form_id': check_for_none(int, data.get('form'), '?'),
+            'form_id': check_for_none(int, data.get('form'), 0),
             'size': 'unknown',
             'tiny_rat': '',
             'big_karp': '',
@@ -113,6 +113,9 @@ class RocketMap:
         pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
         rating_defense = pkmn['rating_defense']
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
+
+        if pkmn['form_id']:
+            pkmn['form_id'] = '[' + get_form_name(int(pkmn['form_id'])) + ']'
 
         if pkmn['catch_prob_1'] != '?':
             pkmn['catch_prob_1'] = "{:.1f}".format(pkmn['catch_prob_1'] * 100)
