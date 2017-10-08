@@ -6,4 +6,3 @@
 !locales/*.json
 !cache/*.*
 *.example
-*.json
