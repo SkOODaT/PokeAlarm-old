@@ -114,9 +114,6 @@ class RocketMap:
         rating_defense = pkmn['rating_defense']
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
 
-        if pkmn['form_id']:
-            pkmn['form_id'] = '[' + get_form_name(int(pkmn['form_id'])) + ']'
-
         if pkmn['catch_prob_1'] != '?':
             pkmn['catch_prob_1'] = "{:.1f}".format(pkmn['catch_prob_1'] * 100)
         if pkmn['catch_prob_2'] != '?':
