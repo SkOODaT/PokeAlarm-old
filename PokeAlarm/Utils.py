@@ -92,13 +92,14 @@ def get_pkmn_id(pokemon_name):
     return get_pkmn_id.ids.get(name)
 
 
-# Returns the name corresponding with the pokemon id
+# Returns the name corresponding with the pokemon id (uses EN locale)
 def get_pkmn_name(pokemon_id):
     match = int(pokemon_id)
-    files = glob(get_path('locales/en/pokemon.json'))
+    files = glob(get_path('locales/en.json'))
     for file_ in files:
         with open(file_, 'r') as f:
             j = json.loads(f.read())
+            j = j['pokemon']
             for pb in j:
                 # log.warning('ID %s AND pokemon_id %s', pb, pokemon_id)
                 if int(pb) == match:
