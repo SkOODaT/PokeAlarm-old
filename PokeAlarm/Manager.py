@@ -914,7 +914,7 @@ class Manager(object):
         # Extract some basic information
         gym_id = gym_info['id']
         to_team_id = gym_info['new_team_id']
-        guard_pokemon_id = gym_info['guard_pkmn_id']
+        guard_pkmn_id = gym_info['guard_pkmn_id']
         from_team_id = self.__gym_hist.get(gym_id)
 
         if gym_info['is_in_battle'] == "True":
@@ -996,7 +996,7 @@ class Manager(object):
         gym_details = self.__gym_info.get(gym_id, {})
 
         if gym_info['is_in_battle'] == 'True':
-            gym_info['is_in_battle'] = '[' + cur_team+ ']' + ' Gym In Battle!'
+            gym_info['is_in_battle'] = '[' + cur_team+ ']' + ' **Gym In Battle!**'
             teamStr = ''
         else:
             gym_info['is_in_battle'] = ''
@@ -1018,7 +1018,7 @@ class Manager(object):
             'points': gym_info['points'],
             'is_in_battle': gym_info['is_in_battle'],
             'teamStr': teamStr,
-            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pokemon_id)
+            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pkmn_id)
         })
 
         if self.__loc_service:

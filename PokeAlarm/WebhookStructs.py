@@ -122,7 +122,7 @@ class RocketMap:
             pkmn['catch_prob_3'] = "{:.1f}".format(pkmn['catch_prob_3'] * 100)
 
         if pkmn['previous_id']:
-            pkmn['previous_id'] = '(' + get_pkmn_name(int(pkmn['previous_id'])) + ')'
+            pkmn['previous_id'] = '[' + get_pkmn_name(int(pkmn['previous_id'])) + ']'
 
         return pkmn
 
@@ -155,7 +155,7 @@ class RocketMap:
             'id': data.get('gym_id',  data.get('id')),
             "new_team_id": int(data.get('team_id',  data.get('team'))),
             "points": str(data.get('total_cp')),
-            "guard_pkmn_id": get_pkmn_name(check_for_none(int, data.get('guard_pokemon_id'), '?')),
+            "guard_pkmn_id": check_for_none(int, data.get('guard_pokemon_id'), '?'),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
@@ -173,13 +173,13 @@ class RocketMap:
         defenders = ""
         for pokemon in data.get('pokemon'):
             pokemoniv = float(((pokemon['iv_attack'] + pokemon['iv_defense'] + pokemon['iv_stamina']) * 100) / float(45))
-            defenders += "[{0} Lv:{1}]\n[{2}X{3} ({4}% {5}/{6}/{7}) CP: {8}/{9} {10}]\n".format(pokemon['trainer_name'], pokemon['trainer_level'], get_pkmn_name(pokemon['pokemon_id']), pokemon['num_upgrades'], "{:.0f}".format(pokemoniv), pokemon['iv_attack'], pokemon['iv_stamina'], pokemon['iv_defense'], pokemon['cp_decayed'], pokemon['cp'], datetime.fromtimestamp(pokemon['deployment_time']).strftime('%Y/%m/%d %I:%M%p'))
+            defenders += "[**{0}** Lv:{1}] [{2}X{3}]\n[{4}% {5}/{6}/{7}] [CP: {8}/{9}]\n[({10})]\n".format(pokemon['trainer_name'], pokemon['trainer_level'], get_pkmn_name(pokemon['pokemon_id']), pokemon['num_upgrades'], "{:.0f}".format(pokemoniv), pokemon['iv_attack'], pokemon['iv_stamina'], pokemon['iv_defense'], pokemon['cp_decayed'], pokemon['cp'], datetime.fromtimestamp(pokemon['deployment_time']).strftime('%m/%d %I:%M%p'))
         gym_info = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
             'new_team_id': int(data.get('team_id',  data.get('team'))),
             'points': str(data.get('total_cp')),
-            'guard_pkmn_id': get_pkmn_name(check_for_none(int, data.get('guard_pokemon_id'), '?')),
+            'guard_pkmn_id': check_for_none(int, data.get('guard_pokemon_id'), '?'),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
             'is_in_battle': check_for_none(str, data.get('is_in_battle'), '?'),
             'defenders': defenders,
