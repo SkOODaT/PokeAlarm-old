@@ -75,6 +75,37 @@ def require_and_remove_key(key, _dict, location):
 
 ################################################## POKEMON UTILITIES ###################################################
 
+# Returns the name corresponding with the pokemon id (uses EN locale)
+def get_pkmn_name(pokemon_id):
+    match = int(pokemon_id)
+    files = glob(get_path('locales/en.json'))    # Change To Locale
+    for file_ in files:
+        with open(file_, 'r') as f:
+            j = json.loads(f.read())
+            j = j['pokemon']
+            for pb in j:
+                # log.warning('ID %s AND pokemon_id %s', pb, pokemon_id)
+                if int(pb) == match:
+                    # log.warning('ID MATCHED WITH GIVEN: NAME IS %s', j[pb])
+                    return j[pb]
+                    break
+
+
+# Returns the unown letter corresponding with the unown id (uses EN locale)
+def get_unown_name(form_id):
+    match = int(form_id)
+    files = glob(get_path('locales/en.json'))    # Change To Locale
+    for file_ in files:
+        with open(file_, 'r') as f:
+            j = json.loads(f.read())
+            j = j['forms']['201']
+            for pb in j:
+                # log.warning('ID %s AND pokemon_id %s', pb, pokemon_id)
+                if int(pb) == match:
+                    # log.warning('ID MATCHED WITH GIVEN: NAME IS %s', j[pb])
+                    return j[pb]
+                    break
+
 
 # Returns the id corresponding with the pokemon name (use all locales for flexibility)
 def get_pkmn_id(pokemon_name):
@@ -90,22 +121,6 @@ def get_pkmn_id(pokemon_name):
                     nm = j[id_].lower()
                     get_pkmn_id.ids[nm] = int(id_)
     return get_pkmn_id.ids.get(name)
-
-
-# Returns the name corresponding with the pokemon id (uses EN locale)
-def get_pkmn_name(pokemon_id):
-    match = int(pokemon_id)
-    files = glob(get_path('locales/en.json'))
-    for file_ in files:
-        with open(file_, 'r') as f:
-            j = json.loads(f.read())
-            j = j['pokemon']
-            for pb in j:
-                # log.warning('ID %s AND pokemon_id %s', pb, pokemon_id)
-                if int(pb) == match:
-                    # log.warning('ID MATCHED WITH GIVEN: NAME IS %s', j[pb])
-                    return j[pb]
-                    break
 
 
 # Returns the id corresponding with the move (use all locales for flexibility)

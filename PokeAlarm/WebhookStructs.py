@@ -6,7 +6,8 @@ import traceback
 # 3rd Party Imports
 # Local Imports
 from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
-    get_move_energy, get_pokemon_gender, get_pokemon_size, get_pokemon_size_full, get_pkmn_name, get_applemaps_link
+    get_move_energy, get_pokemon_gender, get_pokemon_size, get_pokemon_size_full, \
+    get_pkmn_name, get_unown_name, get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
 
@@ -173,7 +174,11 @@ class RocketMap:
         defenders = ""
         for pokemon in data.get('pokemon'):
             pokemoniv = float(((pokemon['iv_attack'] + pokemon['iv_defense'] + pokemon['iv_stamina']) * 100) / float(45))
-            defenders += "[**{0}** Lv:{1}] [{2}X{3}]\n[{4}% {5}/{6}/{7}] [CP: {8}/{9}]\n[({10})]\n".format(pokemon['trainer_name'], pokemon['trainer_level'], get_pkmn_name(pokemon['pokemon_id']), pokemon['num_upgrades'], "{:.0f}".format(pokemoniv), pokemon['iv_attack'], pokemon['iv_stamina'], pokemon['iv_defense'], pokemon['cp_decayed'], pokemon['cp'], datetime.fromtimestamp(pokemon['deployment_time']).strftime('%m/%d %I:%M%p'))
+            if get_unown_name(pokemon['form']):
+                unownform = '(**' + get_unown_name(pokemon['form']) + '**)'
+            else:
+                unownform = ''
+            defenders += "[**{0}** Lv:**{1}**] [**{2}**{3}X{4}]\n[**{5}%** {6}/{7}/{8}] [CP: **{9}**/{10}]\n[({11})]\n".format(pokemon['trainer_name'], pokemon['trainer_level'], get_pkmn_name(pokemon['pokemon_id']), unownform, pokemon['num_upgrades'], "{:.0f}".format(pokemoniv), pokemon['iv_attack'], pokemon['iv_stamina'], pokemon['iv_defense'], pokemon['cp_decayed'], pokemon['cp'], datetime.fromtimestamp(pokemon['deployment_time']).strftime('%m/%d %I:%M%p'))
         gym_info = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
