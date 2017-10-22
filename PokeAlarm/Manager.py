@@ -667,6 +667,7 @@ class Manager(object):
         # Finally, add in all the extra crap we waited to calculate until now
         time_str = get_time_as_str(pkmn['disappear_time'], self.__timezone)
         iv = pkmn['iv']
+        form = self.__locale.get_form_name(pkmn_id, pkmn['form_id'])
 
         pkmn.update({
             'pkmn': name,
@@ -680,7 +681,8 @@ class Manager(object):
             'iv_2': "{:.2f}".format(iv) if iv != '?' else '?',
             'quick_move': self.__locale.get_move_name(quick_id),
             'charge_move': self.__locale.get_move_name(charge_id),
-            'form': self.__locale.get_form_name(pkmn_id, pkmn['form_id']),
+            'form': form,
+            'form_or_empty': '' if form == 'unknown' else form
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(self.__location, [lat, lng], pkmn)
@@ -1231,7 +1233,7 @@ class Manager(object):
 
         # team id saved in self.__gym_hist when processing gym
         team_id = self.__gym_hist.get(gym_id, '?')
-
+        form = self.__locale.get_form_name(pkmn_id, raid_pkmn['form_id'])
         gym_info = self.__gym_info.get(gym_id, {})
 
         raid.update({
@@ -1249,7 +1251,8 @@ class Manager(object):
             'dir': get_cardinal_dir([lat, lng], self.__location),
             'quick_move': self.__locale.get_move_name(quick_id),
             'charge_move': self.__locale.get_move_name(charge_id),
-            'form': self.__locale.get_form_name(pkmn_id, raid_pkmn['form_id']),
+            'form': form,
+            'form_or_empty': '' if form == 'unknown' else form,
             'team_id': team_id,
             'team_name': self.__locale.get_team_name(team_id)
         })
