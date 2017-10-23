@@ -785,10 +785,6 @@ class Manager(object):
                 "url": gym['url']
             }
 
-        if self.__gym_settings['enabled'] is False:
-            log.debug("Gym ignored: notifications are disabled.")
-            return
-
         # Extract some basic information
         to_team_id = gym['new_team_id']
         guard_pokemon_id = gym['guard_pkmn_id']
