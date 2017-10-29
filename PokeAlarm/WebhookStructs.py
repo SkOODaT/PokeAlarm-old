@@ -247,7 +247,7 @@ class RocketMap:
         egg = {
             'type': 'egg',
             'id': id_,
-            'team_id': int(data.get('team_id',  data.get('team'))),
+            #'team_id': int(data.get('team_id',  data.get('team'))),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
             'raid_level': check_for_none(int, data.get('level'), 0),
             'raid_end': raid_end,
@@ -291,7 +291,7 @@ class RocketMap:
         raid = {
             'type': 'raid',
             'id': id_,
-            'team_id': int(data.get('team_id',  data.get('team'))),
+            #'team_id': int(data.get('team_id',  data.get('team'))),
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
             'quick_id': quick_id,
