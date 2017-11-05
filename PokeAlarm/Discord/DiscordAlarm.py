@@ -58,7 +58,7 @@ class DiscordAlarm(Alarm):
             'title': "Raid is incoming!",
             'url': "<gmaps>",
             'body': "A level <raid_level> raid will hatch <begin_24h_time> (<begin_time_left>).",
-            'color': "<team_id>"
+            'color': "<team_name>"
         },
         'raid': {
             'username': "Raid",
@@ -68,7 +68,7 @@ class DiscordAlarm(Alarm):
             'title': "Level <raid_level> Raid is available against <pkmn>!",
             'url': "<gmaps>",
             'body': "The raid is available until <24h_time> (<time_left>).",
-            'color': "<team_id>"
+            'color': "<team_name>"
         }
     }
 

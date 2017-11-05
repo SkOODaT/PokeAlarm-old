@@ -6,6 +6,6 @@ env
 *.txt
 icons/*.*
 cache/*.*
+cache/*.cache
 !data/*.json
 !locales/*.json
-

@@ -28,8 +28,8 @@ class RocketMap:
                 return RocketMap.pokemon(data.get('message'))
             elif kind == 'pokestop':
                 return RocketMap.pokestop(data.get('message'))
-            #elif kind == 'gym_OLD':
-            #    return RocketMap.gym_OLD(data.get('message'))
+            #elif kind == 'gym':
+            #    return RocketMap.gym(data.get('message'))
             elif kind == "gym_details":
                 return RocketMap.gym_info(data.get('message'))
             elif kind == 'raid':
@@ -58,6 +58,10 @@ class RocketMap:
             'id': data['encounter_id'],
             'pkmn_id': int(data['pokemon_id']),
             'disappear_time': datetime.utcfromtimestamp(data['disappear_time']),
+            'time_until_despawn': check_for_none(int, data.get('seconds_until_despawn'), '?'),
+            'spawn_start': check_for_none(int, data.get('spawn_start'), '?'),
+            'spawn_end': check_for_none(int, data.get('spawn_end'), '?'),
+            'verified': check_for_none(bool, data.get('verified'), 'False'),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
@@ -153,9 +157,9 @@ class RocketMap:
         return stop
 
     @staticmethod
-    def gym_OLD(data):
+    def gym(data):
         log.debug("Converting to gym: \n {}".format(data))
-        gym_OLD = {
+        gym = {
             'type': "gym",
             'id': data.get('gym_id',  data.get('id')),
             "new_team_id": int(data.get('team_id',  data.get('team'))),
@@ -172,7 +176,7 @@ class RocketMap:
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
         gym['applemaps'] = get_applemaps_link(gym['lat'], gym['lng'])
-        return gym_OLD
+        return gym
 
     @staticmethod
     def gym_info(data):
@@ -230,7 +234,7 @@ class RocketMap:
 
     @staticmethod
     def egg(data):
-        log.debug("Converting to egg: \n {}".format(data))
+        log.info("Converting to egg: \n {}".format(data))
 
         raid_end = None
         raid_begin = None
@@ -252,9 +256,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id', data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         egg = {
             'type': 'egg',
             'id': id_,
+            'team_id': team_id,
             #'team_id': int(data.get('team_id',  data.get('team'))),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
             'raid_level': check_for_none(int, data.get('level'), 0),
@@ -262,8 +271,8 @@ class RocketMap:
             'raid_begin': raid_begin,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
-            'lat_5': "{.5f}".format(float(data['latitude'])),
-            'lng_5': "{.5f}".format(float(data['longitude']))
+            #'lat_5': "{.5f}".format(float(data['latitude'])),
+            #'lng_5': "{.5f}".format(float(data['longitude']))
         }
 
         egg['gmaps'] = get_gmaps_link(egg['lat'], egg['lng'])
@@ -298,9 +307,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id', data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         raid = {
             'type': 'raid',
             'id': id_,
+            'team_id': team_id,
             #'team_id': int(data.get('team_id',  data.get('team'))),
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
@@ -319,8 +333,8 @@ class RocketMap:
             'raid_begin': raid_begin,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
-            'lat_5': "{.5f}".format(float(data['latitude'])),
-            'lng_5': "{.5f}".format(float(data['longitude']))
+            #'lat_5': "{.5f}".format(float(data['latitude'])),
+            #'lng_5': "{.5f}".format(float(data['longitude']))
        }
 
         raid['gmaps'] = get_gmaps_link(raid['lat'], raid['lng'])
