@@ -18,7 +18,7 @@ from Filters import load_pokemon_section, load_pokestop_section, load_gym_sectio
     load_raid_section
 from Locale import Locale
 from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path, get_time_as_str, \
-    require_and_remove_key, parse_boolean, contains_arg
+    require_and_remove_key, parse_boolean, contains_arg, get_pokemon_cp_range
 from Geofence import load_geofence_file
 from LocationServices import LocationService
 
@@ -276,6 +276,7 @@ class Manager(object):
         config['API_KEY'] = self.__google_key
         config['UNITS'] = self.__units
         config['DEBUG'] = self.__debug
+        config['ROOT_PATH'] = os.path.abspath("{}/..".format(os.path.dirname(__file__)))
 
         # Hush some new loggers
         logging.getLogger('requests').setLevel(logging.WARNING)
@@ -336,7 +337,7 @@ class Manager(object):
                 log.debug("Stack trace: \n {}".format(traceback.format_exc()))
 
         # Save cache and exit
-        self.__cache.save()
+        self.__cache.clean_and_save()
         exit(0)
 
     # Set the location of the Manager
@@ -662,10 +663,12 @@ class Manager(object):
         # Finally, add in all the extra crap we waited to calculate until now
         time_str = get_time_as_str(pkmn['disappear_time'], self.__timezone)
         iv = pkmn['iv']
-        form = self.__locale.get_form_name(pkmn_id, pkmn['form_id'])
+        form_id = pkmn['form_id']
+        form = self.__locale.get_form_name(pkmn_id, form_id)
 
         pkmn.update({
             'pkmn': name,
+            'pkmn_id_3': '{:03}'.format(pkmn_id),
             "dist": get_dist_as_str(dist) if dist != 'unkn' else 'unkn',
             'time_left': time_str[0],
             '12h_time': time_str[1],
@@ -676,6 +679,7 @@ class Manager(object):
             'iv_2': "{:.2f}".format(iv) if iv != '?' else '?',
             'quick_move': self.__locale.get_move_name(quick_id),
             'charge_move': self.__locale.get_move_name(charge_id),
+            'form_id_or_empty': '' if form_id == '?' else '{:03}'.format(form_id),
             'form': form,
             'form_or_empty': '' if form == 'unknown' else form
         })
@@ -1043,16 +1047,15 @@ class Manager(object):
             return
 
         gym_id = egg['id']
-        raid_end = egg['raid_end']
 
         # Check if egg has been processed yet
         if self.__cache.get_egg_expiration(gym_id) is not None:
             if self.__quiet is False:
-                log.info("Raid {} ignored - previously processed.".format(gym_id))
+                log.info("Egg {} ignored - previously processed.".format(gym_id))
             return
 
         # Update egg hatch
-        self.__cache.update_egg_expiration(gym_id, raid_end)
+        self.__cache.update_egg_expiration(gym_id, egg['raid_begin'])
 
         # don't alert about (nearly) hatched eggs
         seconds_left = (egg['raid_begin'] - datetime.utcnow()).total_seconds()
@@ -1138,7 +1141,9 @@ class Manager(object):
             return
 
         self.__cache.update_raid_expiration(gym_id, raid_end)
-        log.info(self.__cache.get_raid_expiration(gym_id))
+
+        log.debug(self.__cache.get_raid_expiration(gym_id))
+        
         # don't alert about expired raids
         seconds_left = (raid_end - datetime.utcnow()).total_seconds()
         if seconds_left < self.__time_limit:
@@ -1206,11 +1211,13 @@ class Manager(object):
         # team id is provided either directly in webhook data or saved in cache when processing gym
         team_id = raid.get('team_id') or self.__cache.get_gym_team(gym_id)
         gym_detail = self.__cache.get_gym_info(gym_id)
-        #team_id = raid['team_id']
-        form = self.__locale.get_form_name(pkmn_id, raid_pkmn['form_id'])
+        form_id = raid_pkmn['form_id']
+        form = self.__locale.get_form_name(pkmn_id, form_id)
+        min_cp, max_cp = get_pokemon_cp_range(pkmn_id, 20)
 
         raid.update({
             'pkmn': name,
+            'pkmn_id_3': '{:03}'.format(pkmn_id),
             "gym_name": gym_detail['name'],
             "gym_description": gym_detail['description'],
             "gym_url": gym_detail['url'],
@@ -1224,10 +1231,13 @@ class Manager(object):
             'dir': get_cardinal_dir([lat, lng], self.__location),
             'quick_move': self.__locale.get_move_name(quick_id),
             'charge_move': self.__locale.get_move_name(charge_id),
+            'form_id_or_empty': '' if form_id == '?' else '{:03}'.format(form_id),
             'form': form,
             'form_or_empty': '' if form == 'unknown' else form,
             'team_id': team_id,
-            'team_name': self.__locale.get_team_name(team_id)
+            'team_name': self.__locale.get_team_name(team_id),
+            'min_cp': min_cp,
+            'max_cp': max_cp
         })
 
         threads = []

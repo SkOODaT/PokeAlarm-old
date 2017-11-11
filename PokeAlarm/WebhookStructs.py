@@ -234,7 +234,7 @@ class RocketMap:
 
     @staticmethod
     def egg(data):
-        log.info("Converting to egg: \n {}".format(data))
+        log.debug("Converting to egg: \n {}".format(data))
 
         raid_end = None
         raid_begin = None
@@ -271,8 +271,8 @@ class RocketMap:
             'raid_begin': raid_begin,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
-            #'lat_5': "{.5f}".format(float(data['latitude'])),
-            #'lng_5': "{.5f}".format(float(data['longitude']))
+            'lat_5': "{:.5f}".format(float(data['latitude'])),
+            'lng_5': "{:.5f}".format(float(data['longitude']))
         }
 
         egg['gmaps'] = get_gmaps_link(egg['lat'], egg['lng'])
@@ -333,8 +333,8 @@ class RocketMap:
             'raid_begin': raid_begin,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
-            #'lat_5': "{.5f}".format(float(data['latitude'])),
-            #'lng_5': "{.5f}".format(float(data['longitude']))
+            'lat_5': "{:.5f}".format(float(data['latitude'])),
+            'lng_5': "{:.5f}".format(float(data['longitude']))
        }
 
         raid['gmaps'] = get_gmaps_link(raid['lat'], raid['lng'])
