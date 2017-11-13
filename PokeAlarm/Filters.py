@@ -389,7 +389,7 @@ class PokemonFilter(Filter):
         if self.min_def != defaults["min_def"] or self.max_def != defaults["max_def"]:
             parts.append("Def: {} to {}".format(self.min_def, self.max_def))
         if self.min_sta != defaults["min_sta"] or self.max_sta != defaults["max_sta"]:
-            parts.append("Atk: {} to {}".format(self.min_sta, self.max_sta))
+            parts.append("Sta: {} to {}".format(self.min_sta, self.max_sta))
         if self.req_quick_move is not None:
             parts.append("Quick Moves: {}".format(self.req_quick_move))
         if self.req_charge_move is not None:
@@ -598,4 +598,3 @@ class GymFilter(Filter):
                           + "Please see documentation for accepted team names and correct your Filters file.")
                 sys.exit(1)
         return s
-

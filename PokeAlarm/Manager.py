@@ -544,7 +544,7 @@ class Manager(object):
                                 filt_ct))
                     continue
             else:
-                if filt.needs_rating_attack and filt.ignore_missing is True:
+                if filt.ignore_missing is True:
                     log.info(
                         "{} rejected: Attack rating information was missing - (F #{})".format(
                             name, filt_ct))
@@ -561,7 +561,7 @@ class Manager(object):
                                 filt_ct))
                     continue
             else:
-                if filt.needs_rating_defense and filt.ignore_missing is True:
+                if filt.ignore_missing is True:
                     log.info(
                         "{} rejected: Defense rating information was missing - (F #{})".format(
                             name, filt_ct))
