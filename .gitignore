@@ -4,6 +4,8 @@ env
 *.json
 *.ini
 *.txt
+icons/*.*
+cache/*.*
 !data/*.json
 !locales/*.json
-cache/gym_details.json
+
