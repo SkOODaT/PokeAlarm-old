@@ -1036,13 +1036,6 @@ class Manager(object):
         for thread in threads:
             thread.join()
 
-    def process_location(self, loc):
-        lat = loc['latitude']
-        lon = loc['longitude']
-        loc = "{}, {}".format(lat, lon)
-        log.info("Got new location via webhook: {}".format(loc))
-        self.__location = [lat, lon]
-
     def process_egg(self, egg):
         # Quick check for enabled
         if self.__egg_settings['enabled'] is False:
@@ -1252,6 +1245,10 @@ class Manager(object):
 
         for thread in threads:
             thread.join()
+
+    def process_location(self, coords):
+        loc_str = "{}, {}".format(coords['latitude'], coords['longitude'])
+        self.set_location(loc_str)
 
     # Check to see if a notification is within the given range
     def check_geofences(self, name, lat, lng):
