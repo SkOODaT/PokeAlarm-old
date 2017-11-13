@@ -325,6 +325,8 @@ class Manager(object):
                     self.process_egg(obj)
                 elif kind == "raid":
                     self.process_raid(obj)
+                elif kind == "location":
+                    self.process_location(obj)
                 else:
                     log.error("!!! Manager does not support {} objects!".format(kind))
                 log.debug("Finished processing object {} with id {}".format(obj['type'], obj['id']))
@@ -1057,6 +1059,10 @@ class Manager(object):
 
         for thread in threads:
             thread.join()
+
+    def process_location(self, coords):
+        loc_str = "{}, {}".format(coords['latitude'], coords['longitude'])
+        self.set_location(loc_str)
 
     # Check to see if a notification is within the given range
     def check_geofences(self, name, lat, lng):
