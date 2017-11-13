@@ -15,7 +15,7 @@ import gipc
 from . import config
 from Cache import cache_factory
 from Filters import load_pokemon_section, load_pokestop_section, load_gym_section, load_egg_section, \
-    load_raid_section
+    load_raid_section, load_filters
 from Locale import Locale
 from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path, get_time_as_str, \
     require_and_remove_key, parse_boolean, contains_arg, get_pokemon_cp_range
@@ -114,6 +114,9 @@ class Manager(object):
                 filters = json.load(f)
             if type(filters) is not dict:
                 log.critical("Filters file's must be a JSON object: { \"pokemon\":{...},... }")
+
+            # Load in the filter definitions
+            load_filters(filters)
 
             # Load in the Pokemon Section
             self.__pokemon_settings = load_pokemon_section(
@@ -544,7 +547,7 @@ class Manager(object):
                                 filt_ct))
                     continue
             else:
-                if filt.ignore_missing is True:
+                if filt.needs_rating_attack and filt.ignore_missing is True:
                     log.info(
                         "{} rejected: Attack rating information was missing - (F #{})".format(
                             name, filt_ct))
@@ -561,7 +564,7 @@ class Manager(object):
                                 filt_ct))
                     continue
             else:
-                if filt.ignore_missing is True:
+                if filt.needs_rating_defense and filt.ignore_missing is True:
                     log.info(
                         "{} rejected: Defense rating information was missing - (F #{})".format(
                             name, filt_ct))
