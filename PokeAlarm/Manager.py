@@ -947,8 +947,8 @@ class Manager(object):
         time_str = get_time_as_str(egg['raid_end'], self.__timezone)
         start_time_str = get_time_as_str(egg['raid_begin'], self.__timezone)
 
-        # team id saved in self.__gym_hist when processing gym
-        team_id = self.__cache.get_gym_team(gym_id)
+        # team id is provided either directly in webhook data or saved in cache when processing gym
+        team_id = egg.get('team_id') or self.__cache.get_gym_team(gym_id)
         gym_info = self.__cache.get_gym_info(gym_id)
 
         egg.update({
@@ -1059,8 +1059,8 @@ class Manager(object):
         time_str = get_time_as_str(raid['raid_end'], self.__timezone)
         start_time_str = get_time_as_str(raid['raid_begin'], self.__timezone)
 
-        # team id saved in self.__gym_hist when processing gym
-        team_id = self.__cache.get_gym_team(gym_id)
+        # team id is provided either directly in webhook data or saved in cache when processing gym
+        team_id = raid.get('team_id') or self.__cache.get_gym_team(gym_id)
         gym_info = self.__cache.get_gym_info(gym_id)
         form_id = raid_pkmn['form_id']
         form = self.__locale.get_form_name(pkmn_id, form_id)

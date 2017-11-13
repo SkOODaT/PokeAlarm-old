@@ -89,7 +89,10 @@ class RocketMap:
             'gmaps': get_gmaps_link(lat, lng),
             'applemaps': get_applemaps_link(lat, lng),
             'rating_attack': data.get('rating_attack'),
-            'rating_defense': data.get('rating_defense')
+            'rating_defense': data.get('rating_defense'),
+            'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), 'unkn'),
+            'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), 'unkn'),
+            'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn')
         }
         if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
@@ -115,6 +118,13 @@ class RocketMap:
         pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
         rating_defense = pkmn['rating_defense']
         pkmn['rating_defense'] = rating_defense.upper() if rating_defense else '-'
+        
+        if pkmn['catch_prob_1'] != 'unkn':
+            pkmn['catch_prob_1'] = "{:.1f}".format(pkmn['catch_prob_1'] * 100)
+        if pkmn['catch_prob_2'] != 'unkn':
+            pkmn['catch_prob_2'] = "{:.1f}".format(pkmn['catch_prob_2'] * 100)
+        if pkmn['catch_prob_3'] != 'unkn':
+            pkmn['catch_prob_3'] = "{:.1f}".format(pkmn['catch_prob_3'] * 100)
 
         return pkmn
 
@@ -194,9 +204,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id', data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         egg = {
             'type': 'egg',
             'id': id_,
+            'team_id': team_id,
             'raid_level': check_for_none(int, data.get('level'), 0),
             'raid_end': raid_end,
             'raid_begin': raid_begin,
@@ -238,9 +253,14 @@ class RocketMap:
         else:
             id_ = data.get('gym_id')  # RM sends the gym id
 
+        team_id = data.get('team_id', data.get('team'))
+        if team_id is not None:
+            team_id = int(team_id)
+
         raid = {
             'type': 'raid',
             'id': id_,
+            'team_id': team_id,
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
             'quick_id': quick_id,
