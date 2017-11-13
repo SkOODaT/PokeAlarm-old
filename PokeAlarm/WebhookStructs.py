@@ -131,6 +131,10 @@ class RocketMap:
         if pkmn['previous_id']:
             pkmn['previous_id'] = '[' + get_pkmn_name(int(pkmn['previous_id'])) + ']'
 
+        # Todo: Remove this when monocle get's it's own standard
+        if pkmn['form_id'] == 0:
+            pkmn['form_id'] = '?'
+
         return pkmn
 
     @staticmethod
