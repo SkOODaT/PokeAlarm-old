@@ -5,6 +5,7 @@ env
 *.ini
 *.txt
 icons/*.*
+logs/*.*
 cache/*.*
 cache/*.cache
 !data/*.json

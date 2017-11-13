@@ -6,9 +6,9 @@ import json
 import multiprocessing
 import Queue
 import traceback
-import os
 import re
 import sys
+import os
 # 3rd Party Imports
 import gipc
 # Local Imports
@@ -1143,7 +1143,7 @@ class Manager(object):
         self.__cache.update_raid_expiration(gym_id, raid_end)
 
         log.debug(self.__cache.get_raid_expiration(gym_id))
-        
+
         # don't alert about expired raids
         seconds_left = (raid_end - datetime.utcnow()).total_seconds()
         if seconds_left < self.__time_limit:

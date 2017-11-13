@@ -18,6 +18,7 @@ import Queue
 import json
 import os
 import sys
+from time import strftime
 # 3rd Party Imports
 from flask import Flask, request, abort
 # Local Imports
@@ -168,8 +169,25 @@ def parse_settings(root_path):
                         help='Maximum number of attempts an alarm makes to send a notification.')
     parser.add_argument('-tz', '--timezone', type=str, action='append', default=[None],
                         help='Timezone used for notifications.  Ex: "America/Los_Angeles"')
+    parser.add_argument('--log_to_file',
+                        help=('Enable logging to file.'),
+                        action='store_true', default=False)
+    parser.add_argument('--log_path',
+                        help=('Defines directory to save log files to.'),
+                        default='logs/')
 
     args = parser.parse_args()
+
+    if args.log_to_file:
+        # Create directory for log files.
+        if not os.path.exists(args.log_path):
+            os.mkdir(args.log_path)
+        date = strftime('%Y%m%d_%H%M')
+        filename = os.path.join(args.log_path, '{}.log'.format(date))
+        fh = logging.FileHandler(filename)
+        fh.setFormatter(
+            logging.Formatter(fmt='%(asctime)s [%(processName)15.15s][%(name)10.10s][%(levelname)8.8s] %(message)s'))
+        logging.root.addHandler(fh)
 
     if args.debug:
         log.setLevel(logging.DEBUG)
