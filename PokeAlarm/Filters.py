@@ -4,8 +4,8 @@ import sys
 import logging
 # 3rd Party Imports
 # Local Imports
-from Utils import parse_boolean, reject_leftover_parameters, get_team_id, get_move_id, get_pkmn_id, require_and_remove_key, \
-    get_dist_as_str
+from Utils import parse_boolean, reject_leftover_parameters, get_team_id,\
+    get_move_id, get_pkmn_id, require_and_remove_key, get_dist_as_str
 
 
 log = logging.getLogger('Filters')
@@ -50,6 +50,9 @@ def create_multi_filter(location, FilterType, settings, default):
         elif settings in named_filters:
             # We got a name of a filter - we use it directly
             return [FilterType(named_filters[settings].copy(), default, location)]
+        log.error("[ {filter1}, {filter2}, {filter3} ] for multiple filters.")
+        log.error("Please check the PokeAlarm documentation "
+                  + "for more information.")
 
     # All other cases are errors
     log.error("{} contains filter that is not in the proper format. Accepted formats are: ".format(location))
@@ -103,10 +106,12 @@ def load_pokemon_filters(settings):
         pkmn_id = get_pkmn_id(name)
         if pkmn_id is None:
             log.error("Unable to find pokemon named '{}'...".format(name))
-            log.error("Please see PokeAlarm documentation for proper Filter file formatting.")
+            log.error("Please see PokeAlarm documentation for "
+                      + "proper Filter file formatting.")
             sys.exit(1)
         if pkmn_id in filters:
-            log.error("Multiple entries detected for Pokemon #{}. Please remove any extra names.")
+            log.error("Multiple entries detected for Pokemon #{}"
+                      + " Please remove any extra names.").format(pkmn_id)
             sys.exit(1)
         f = create_multi_filter(name, PokemonFilter, settings[name], default)
         if f is not None:
@@ -117,7 +122,8 @@ def load_pokemon_filters(settings):
 
 def load_pokemon_section(settings):
     log.info("Setting Pokemon filters...")
-    pokemon = { "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False)}
+    pokemon = {"enabled": bool(parse_boolean(
+        settings.pop('enabled', None)) or False)}
 
     filters = load_pokemon_filters(settings)
     pokemon['filters'] = filters
@@ -135,9 +141,11 @@ def load_pokemon_section(settings):
 def load_pokestop_section(settings):
     log.info("Setting Pokestop filters...")
     stop = {
-        "enabled": bool(parse_boolean(require_and_remove_key('enabled', settings, 'Pokestops')) or False),
-        "filters": create_multi_filter('Pokestops --> filters', PokestopFilter,
-                                       settings.pop('filters', "False"), PokestopFilter.get_defaults())
+        "enabled": bool(parse_boolean(require_and_remove_key(
+            'enabled', settings, 'Pokestops')) or False),
+        "filters": create_multi_filter(
+            'Pokestops --> filters', PokestopFilter,
+            settings.pop('filters', "False"), PokestopFilter.get_defaults())
     }
 
     reject_leftover_parameters(settings, "Pokestops section of Filters file.")
@@ -154,13 +162,17 @@ def load_gym_section(settings):
     default = default_filt.to_dict()
     # Create the settings for gyms
     gym = {
-        "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False),
-        "ignore_neutral": bool(parse_boolean(settings.pop('ignore_neutral', None)) or False),
-        "filters": create_multi_filter('Gym --> filters', GymFilter,
-                                       settings.pop('filters', "False"), default)
+        "enabled": bool(parse_boolean(
+            settings.pop('enabled', None)) or False),
+        "ignore_neutral": bool(parse_boolean(
+            settings.pop('ignore_neutral', None)) or False),
+        "filters": create_multi_filter(
+            'Gym --> filters', GymFilter,
+            settings.pop('filters', "False"), default)
     }
 
-    reject_leftover_parameters(settings, 'Gym section of Filters file.')  # Check for leftovers
+    reject_leftover_parameters(settings, 'Gym section of Filters file.')
+
     for i in range(len(gym['filters'])):
         log.debug("F#{}: ".format(i) + gym['filters'][i].to_string())
     if gym['enabled'] is False:
@@ -203,7 +215,7 @@ def load_raid_section(settings):
 class Filter(object):
 
     def __init__(self, settings, default, location):
-        """ Abstract class used to define identify and group limits on when notifications are sent. """
+        """ Base filter class """
         self.name = settings.pop('name', None)
         self.min_dist = float(settings.pop('min_dist', None) or default['min_dist'])
         self.max_dist = float(settings.pop('max_dist', None) or default['max_dist'])
@@ -241,14 +253,17 @@ class PokemonFilter(Filter):
         super(PokemonFilter, self).__init__(settings, default, location)
         pDefaults = PokemonFilter.get_defaults()
         # Do we ignore pokemon with missing info?
-        self.ignore_missing = bool(parse_boolean(settings.pop('ignore_missing', default['ignore_missing'])))
+        self.ignore_missing = bool(parse_boolean(
+            settings.pop('ignore_missing', default['ignore_missing'])))
         # CP
         self.min_cp = int(settings.pop('min_cp', None) or default['min_cp'])
         self.max_cp = int(settings.pop('max_cp', None) or default['max_cp'])
         self.needs_cp = self.min_cp != pDefaults['min_cp'] or self.max_cp != pDefaults['max_cp']
         # Level
-        self.min_level = int(settings.pop('min_level', None) or default['min_level'])
-        self.max_level = int(settings.pop('max_level', None) or default['max_level'])
+        self.min_level = int(settings.pop('min_level', None)
+                             or default['min_level'])
+        self.max_level = int(settings.pop('max_level', None)
+                             or default['max_level'])
         self.needs_level = self.min_level != pDefaults['min_level'] or self.max_level != pDefaults['max_level']
         # IVs
         self.min_iv = float(settings.pop('min_iv', None) or default['min_iv'])
@@ -264,13 +279,19 @@ class PokemonFilter(Filter):
         self.max_sta = int(settings.pop('max_sta', None) or default['max_sta'])
         self.needs_sta = self.min_sta != pDefaults['min_sta'] or self.max_sta != pDefaults['max_sta']
         # Size
-        self.sizes = PokemonFilter.check_sizes(settings.pop("size", default['size']))
-        self.genders = PokemonFilter.check_genders(settings.pop("gender", default['gender']))
-        self.forms = PokemonFilter.check_forms(settings.pop("form", default['form']))
+        self.sizes = PokemonFilter.check_sizes(
+            settings.pop("size", default['size']))
+        self.genders = PokemonFilter.check_genders(
+            settings.pop("gender", default['gender']))
+        self.forms = PokemonFilter.check_forms(
+            settings.pop("form", default['form']))
         # Moves - These can't be set in the default filter
-        self.req_quick_move = PokemonFilter.create_moves_list(settings.pop("quick_move", default['quick_move']))
-        self.req_charge_move = PokemonFilter.create_moves_list(settings.pop("charge_move", default['charge_move']))
-        self.req_moveset = PokemonFilter.create_moveset_list(settings.pop("moveset",  default['moveset']))
+        self.req_quick_move = PokemonFilter.create_moves_list(
+            settings.pop("quick_move", default['quick_move']))
+        self.req_charge_move = PokemonFilter.create_moves_list(
+            settings.pop("charge_move", default['charge_move']))
+        self.req_moveset = PokemonFilter.create_moveset_list(
+            settings.pop("moveset", default['moveset']))
         # Moveset Ratings
         self.min_rating_attack = (settings.pop('min_rating_attack', None) or default['min_rating_attack']).upper()
         self.max_rating_attack = (settings.pop('max_rating_attack', None) or default['max_rating_attack']).upper()
@@ -279,7 +300,8 @@ class PokemonFilter(Filter):
         self.max_rating_defense = (settings.pop('max_rating_defense', None) or default['max_rating_defense']).upper()
         self.needs_rating_defense = self.min_rating_defense != pDefaults['min_rating_defense'] or self.max_rating_defense != pDefaults['max_rating_defense']
 
-        reject_leftover_parameters(settings, "pokemon filter under '{}'".format(location))
+        reject_leftover_parameters(
+            settings, "pokemon filter under '{}'".format(location))
 
     # Checks the CP against this filter
     def check_cp(self, cp):
@@ -360,7 +382,8 @@ class PokemonFilter(Filter):
             "min_atk": self.min_atk, "max_atk": self.max_atk,
             "min_def": self.min_def, "max_def": self.max_def,
             "min_sta": self.min_sta, "max_sta": self.max_sta,
-            "quick_move": self.req_quick_move, "charge_move": self.req_charge_move,
+            "quick_move": self.req_quick_move,
+            "charge_move": self.req_charge_move,
             "moveset": self.req_moveset,
             "size": self.sizes,
             "gender": self.genders,
@@ -434,11 +457,13 @@ class PokemonFilter(Filter):
 
     @staticmethod
     def create_moves_list(moves):
-        if moves is None or type(moves) == set:  # no moves or already defined moves
+        # no moves or already defined moves
+        if moves is None or type(moves) == set:
             return moves
         if type(moves) != list:
-            log.error("Moves list must be in a comma seperated array. Ex: [\"Move\",\"Move\"]. "
-                      + "Please see PokeAlarm documentation for more examples.")
+            log.error("Moves list must be in a comma seperated array. "
+                      + "Ex: [\"Move\",\"Move\"]. Please see PokeAlarm "
+                      + "documentation for more examples.")
             sys.exit(1)
         list_ = set()
         for move_name in moves:
@@ -447,7 +472,8 @@ class PokemonFilter(Filter):
                 list_.add(move_id)
             else:
                 log.error("{} is not a valid move name.".format(move_name)
-                          + "Please see documentation for accepted move names and correct your Filters file.")
+                          + "Please see documentation for accepted move "
+                          + "names and correct your Filters file.")
                 sys.exit(1)
         return list_
 
@@ -472,7 +498,8 @@ class PokemonFilter(Filter):
                 list_.add(size)
             else:
                 log.error("{} is not a valid size name.".format(size))
-                log.error("Please use one of the following: {}".format(valid_sizes))
+                log.error("Please use one of the following: "
+                          + "{}".format(valid_sizes))
                 sys.exit(1)
         return list_
 
@@ -501,7 +528,8 @@ class PokemonFilter(Filter):
                     list_.add(u'\u26b2')
             else:
                 log.error("{} is not a valid gender name.".format(gender))
-                log.error("Please use one of the following: {}".format(valid_genders))
+                log.error("Please use one of the following: "
+                          + "{}".format(valid_genders))
                 sys.exit(1)
         return list_
 
@@ -520,13 +548,14 @@ class PokemonFilter(Filter):
         return list_
 
 
-# Pokestop Filter is used to determine when Pokestop notifications will be triggered.
+# Pokestop Filter determines when Pokestop notifications will be triggered.
 class PokestopFilter(Filter):
 
     def __init__(self, settings, default, location):
         super(PokestopFilter, self).__init__(settings, default, location)
 
-        reject_leftover_parameters(settings, "Pokestop filter in {}".format(location))
+        reject_leftover_parameters(settings, "Pokestop filter in "
+                                   + "{}".format(location))
 
 
 # GymFilter is used to determine when Gym notifications will be triggered.
@@ -539,10 +568,11 @@ class GymFilter(Filter):
         self.to_team = GymFilter.create_team_list(settings.pop('to_team'))  \
             if 'to_team' in settings else default['to_team'].copy()
         # Check for 'From Team' list
-        self.from_team = GymFilter.create_team_list(settings.pop('from_team')) \
+        self.from_team = GymFilter.create_team_list(settings.pop('from_team'))\
             if 'from_team' in settings else default['to_team'].copy()
 
-        reject_leftover_parameters(settings, "Gym filter in {}".format(location))
+        reject_leftover_parameters(settings, "Gym filter in "
+                                   + "{}".format(location))
 
     def check_from_team(self, team_id):
         return team_id in self.from_team
@@ -577,7 +607,7 @@ class GymFilter(Filter):
     def create_team_list(settings):  # Create a set of Team ID #'s
         if type(settings) != list:
             log.error("Gym names must be specified in an array. EX: "
-                      + "[\"Valor\", \"Instinct\"]" )
+                      + "[\"Valor\", \"Instinct\"]")
             sys.exit(1)
         s = set()
         for team in settings:
@@ -586,7 +616,7 @@ class GymFilter(Filter):
                 s.add(team_id)
             else:  # If no team ID
                 log.error("{} is not a valid team name.".format(team)
-                          + "Please see documentation for accepted team names and correct your Filters file.")
+                          + "Please see documentation for accepted team "
+                          + "names and correct your Filters file.")
                 sys.exit(1)
         return s
-

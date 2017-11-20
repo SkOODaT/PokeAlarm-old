@@ -5,19 +5,23 @@ import logging
 import traceback
 # 3rd Party Imports
 # Local Imports
-from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_duration,\
-    get_move_energy, get_pokemon_gender, get_pokemon_size, get_applemaps_link
+from PokeAlarm.Utils import get_gmaps_link, get_move_damage, get_move_dps, \
+    get_move_duration, get_move_energy, get_pokemon_gender, get_pokemon_size, \
+    get_applemaps_link
 
 log = logging.getLogger('WebhookStructs')
 
 
-################################################## Webhook Standards  ##################################################
+# Todo: Move this into a better place
+# Ensure that the value isn't None but replacing with a default
+def check_for_none(type_, val, default):
+    return type_(val) if val is not None else default
 
 
-# RocketMap Standards
 class RocketMap:
     def __init__(self):
-        raise NotImplementedError("This is a static class not meant to be initiated")
+        raise NotImplementedError(
+            "This is a static class not meant to be initiated")
 
     @staticmethod
     def make_object(data):
@@ -31,14 +35,17 @@ class RocketMap:
                 return RocketMap.gym(data.get('message'))
             elif kind == 'raid':
                 return RocketMap.egg_or_raid(data.get('message'))
-            elif kind in ['captcha', 'scheduler']:  # Unsupported Webhooks
-                log.debug("{} webhook received. This webhooks is not yet supported at this time.".format({kind}))
+            elif kind in ['captcha', 'scheduler']:  # Unsupported
+                log.debug("{} webhook received.".format(kind)
+                          + " This format not supported at this time.")
             elif kind == 'location':
                 return RocketMap.location(data.get('message'))
             else:
-                log.error("Invalid type specified ({}). Are you using the correct map type?".format(kind))
+                log.error("Invalid type specified ({}). ".format(kind)
+                          + "Are you using the correct map type?")
         except Exception as e:
-            log.error("Encountered error while processing webhook ({}: {})".format(type(e).__name__, e))
+            log.error("Encountered error while processing webhook "
+                      + "({}: {})".format(type(e).__name__, e))
             log.debug("Stack trace: \n {}".format(traceback.format_exc()))
         return None
 
@@ -49,13 +56,15 @@ class RocketMap:
         quick_id = check_for_none(int, data.get('move_1'), '?')
         charge_id = check_for_none(int, data.get('move_2'), '?')
         lat, lng = data['latitude'], data['longitude']
-        # Generate all the non-manager specifi
+        # Generate all the non-manager specific DTS
         pkmn = {
             'type': "pokemon",
             'id': data['encounter_id'],
             'pkmn_id': int(data['pokemon_id']),
-            'disappear_time': datetime.utcfromtimestamp(data['disappear_time']),
-            'time_until_despawn': check_for_none(int, data.get('seconds_until_despawn'), '?'),
+            'disappear_time': datetime.utcfromtimestamp(
+                data['disappear_time']),
+            'time_until_despawn': check_for_none(
+                int, data.get('seconds_until_despawn'), '?'),
             'spawn_start': check_for_none(int, data.get('spawn_start'), '?'),
             'spawn_end': check_for_none(int, data.get('spawn_end'), '?'),
             'verified': check_for_none(bool, data.get('verified'), 'False'),
@@ -81,7 +90,8 @@ class RocketMap:
             'charge_energy': get_move_energy(charge_id),
             'height': check_for_none(float, data.get('height'), 'unkn'),
             'weight': check_for_none(float, data.get('weight'), 'unkn'),
-            'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
+            'gender': get_pokemon_gender(
+                check_for_none(int, data.get('gender'), '?')),
             'form_id': check_for_none(int, data.get('form'), '?'),
             'size': 'unknown',
             'tiny_rat': '',
@@ -95,12 +105,14 @@ class RocketMap:
             'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn')
         }
         if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
-            pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
+            pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta'])
+                                * 100) / float(45))
         else:
             pkmn['atk'], pkmn['def'], pkmn['sta'] = '?', '?', '?'
 
         if pkmn['height'] != 'unkn' or pkmn['weight'] != 'unkn':
-            pkmn['size'] = get_pokemon_size(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
+            pkmn['size'] = get_pokemon_size(
+                pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
             pkmn['height'] = "{:.2f}".format(pkmn['height'])
             pkmn['weight'] = "{:.2f}".format(pkmn['weight'])
 
@@ -137,7 +149,7 @@ class RocketMap:
         stop = {
             'type': "pokestop",
             'id': data['pokestop_id'],
-            'expire_time':  datetime.utcfromtimestamp(data['lure_expiration']),
+            'expire_time': datetime.utcfromtimestamp(data['lure_expiration']),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
@@ -152,16 +164,16 @@ class RocketMap:
         log.debug("Converting to gym: \n {}".format(data))
         gym = {
             'type': "gym",
-            'id': data.get('gym_id',  data.get('id')),
-            "new_team_id": int(data.get('team_id',  data.get('team'))),
-            #"points": str(data.get('gym_points')),
+            'id': data.get('gsection of codeym_id', data.get('id')),
+            "new_team_id": int(data.get('team_id', data.get('team'))),
             "guard_pkmn_id": data.get('guard_pokemon_id'),
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
             'lng_5': "{:.5f}".format(float(data['longitude'])),
             'name': check_for_none(str, data.get('name'), 'unknown').strip(),
-            'description': check_for_none(str, data.get('description'), 'unknown').strip(),
+            'description': check_for_none(
+                str, data.get('description'), 'unknown').strip(),
             'url': check_for_none(str, data.get('url'), 'unknown')
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
@@ -280,22 +292,15 @@ class RocketMap:
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
             'lng_5': "{:.5f}".format(float(data['longitude']))
-       }
+        }
 
         raid['gmaps'] = get_gmaps_link(raid['lat'], raid['lng'])
         raid['applemaps'] = get_applemaps_link(raid['lat'], raid['lng'])
 
         return raid
-
     @staticmethod
     def location(data):
         data['type'] = 'location'
         data['id'] = str(uuid.uuid4())
         return data
 
-
-# Ensure that the value isn't None but replacing with a default
-def check_for_none(type_, val, default):
-    return type_(val) if val is not None else default
-
-########################################################################################################################
