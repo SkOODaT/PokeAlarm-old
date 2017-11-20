@@ -11,8 +11,8 @@ log = logging.getLogger('Cache')
 class Cache(object):
     """ Basic object for caching information.
 
-    This object caches and manages information in Memory. Information will be lost between run times if save has not
-    been implemented correctly.
+    This object caches and manages information in Memory. Information will
+    be lost between run times if save has not been implemented correctly.
     """
 
     _default_gym_info = {
@@ -22,7 +22,7 @@ class Cache(object):
     }
 
     def __init__(self):
-        """ Initialize a new cache object, retrieving and previously saved results if possible. """
+        """ Initializes a new cache object for storing data between events. """
         self._pokemon_hist = {}
         self._pokestop_hist = {}
         self._gym_team = {}
@@ -90,7 +90,9 @@ class Cache(object):
 
     def _clean_hist(self):
         """ Clean expired objects to free up memory. """
-        for hist in (self._pokemon_hist, self._pokestop_hist, self._egg_hist, self._raid_hist):
+        for hist in (
+                self._pokemon_hist, self._pokestop_hist, self._egg_hist,
+                self._raid_hist):
             old = []
             now = datetime.utcnow()
             log.debug(hist)
