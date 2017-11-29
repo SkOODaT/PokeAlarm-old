@@ -344,6 +344,8 @@ def get_color(color_id):
                 color_ = 0xF6F006
             elif color_id == "Ditto":
                 color_ = 0xff66ff
+            elif color_id == "Pikachu":
+                color_ = 0xF6F006
             elif color_id[-1] == 's' or color_id[-1] == 'm':
                 color_ = 0xff66ff
             else:
