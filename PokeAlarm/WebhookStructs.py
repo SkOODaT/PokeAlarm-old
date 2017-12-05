@@ -94,7 +94,7 @@ class RocketMap:
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), 'unkn'),
             'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn')
         }
-        if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
+        if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
         else:
             pkmn['atk'], pkmn['def'], pkmn['sta'] = '?', '?', '?'
