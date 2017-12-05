@@ -19,6 +19,7 @@ from Filters import load_pokemon_section, load_pokestop_section, load_gym_sectio
     load_raid_section, load_filters
 from Locale import Locale
 from LocationServices import LocationService
+from PokeAlarm.Geofence import load_geofence_file
 from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path, get_time_as_str, \
     require_and_remove_key, parse_boolean, contains_arg, get_pokemon_cp_range
 # Local Imports
