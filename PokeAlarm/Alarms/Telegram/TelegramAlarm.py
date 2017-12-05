@@ -99,7 +99,9 @@ class TelegramAlarm(Alarm):
         alert = {
             'chat_id': settings.pop('chat_id', self.__chat_id),
             'title': settings.pop('title', default['title']),
+            'title_noiv': settings.pop('title_noiv', default['title']),
             'body': settings.pop('body', default['body']),
+            'body_noiv': settings.pop('body_noiv', default['body']),
             'venue': parse_boolean(settings.pop('venue', self.__venue)),
             'location': parse_boolean(
                 settings.pop('location', self.__location)),
@@ -120,8 +122,10 @@ class TelegramAlarm(Alarm):
         if alert['venue']:
             self.send_venue(alert, info)
         else:
-            text = '<b>' + replace(alert['title'], info)\
-                   + '</b> \n' + replace(alert['body'], info)
+            key_title = 'title_noiv' if info.get('iv') == '?' else 'title'
+            key_body = 'body_noiv' if info.get('iv') == '?' else 'body'
+            text = '<b>' + replace(alert[key_title], info)\
+                   + '</b> \n' + replace(alert[key_body], info)
             self.send_message(alert['chat_id'], text)
 
         if alert['location']:
@@ -191,12 +195,14 @@ class TelegramAlarm(Alarm):
 
     # Send a venue message to telegram
     def send_venue(self, alert, info):
+        key_title = 'title_noiv' if info.get('iv') == '?' else 'title'
+        key_body = 'body_noiv' if info.get('iv') == '?' else 'body'
         args = {
             'chat_id': alert['chat_id'],
             'latitude': info['lat'],
             'longitude': info['lng'],
-            'title': replace(alert['title'], info),
-            'address': replace(alert['body'], info),
+            'title': replace(alert[key_title], info),
+            'address': replace(alert[key_body], info),
             'disable_notification': 'False'
         }
         try_sending(log, self.connect, "Telegram (venue)",
