@@ -1007,6 +1007,7 @@ class Manager(object):
             return
 
         gym_id = egg['id']
+        gym_info = self.__cache.get_gym_info(gym_id)
 
         # Check if egg has been processed yet
         if self.__cache.get_egg_expiration(gym_id) is not None:
@@ -1029,6 +1030,19 @@ class Manager(object):
         lat, lng = egg['lat'], egg['lng']
         dist = get_earth_dist([lat, lng], self.__location)
         egg['dist'] = dist
+
+        # Check if egg gym filter has a contains field and if so check it
+        if len(self.__egg_settings['contains']) > 0:
+            log.debug("Egg gymname_contains "
+                      "filter: '{}'".format(self.__egg_settings['contains']))
+            log.debug("Egg Gym Name is '{}'".format(gym_info['name'].lower()))
+            log.debug("Egg Gym Info is '{}'".format(gym_info))
+            if not any(x in gym_info['name'].lower()
+                       for x in self.__egg_settings['contains']):
+                log.info("Egg {} ignored: gym name did not match the "
+                         "gymname_contains "
+                         "filter.".format(gym_id))
+                return
 
         # Check if raid is in geofences
         egg['geofence'] = self.check_geofences('Raid', lat, lng)
@@ -1061,7 +1075,6 @@ class Manager(object):
 
         # team id is provided either directly in webhook data or saved in cache when processing gym
         team_id = egg.get('team_id') or self.__cache.get_gym_team(gym_id)
-        gym_info = self.__cache.get_gym_info(gym_id)
 
         egg.update({
             "gym_name": gym_info['name'],
@@ -1096,6 +1109,7 @@ class Manager(object):
             return
 
         gym_id = raid['id']
+        gym_info = self.__cache.get_gym_info(gym_id)
 
         pkmn_id = raid['pkmn_id']
         raid_end = raid['raid_end']
@@ -1119,6 +1133,19 @@ class Manager(object):
 
         lat, lng = raid['lat'], raid['lng']
         dist = get_earth_dist([lat, lng], self.__location)
+
+        # Check if raid gym filter has a contains field and if so check it
+        if len(self.__raid_settings['contains']) > 0:
+            log.debug("Raid gymname_contains "
+                      "filter: '{}'".format(self.__raid_settings['contains']))
+            log.debug("Raid Gym Name is '{}'".format(gym_info['name'].lower()))
+            log.debug("Raid Gym Info is '{}'".format(gym_info))
+            if not any(x in gym_info['name'].lower()
+                       for x in self.__raid_settings['contains']):
+                log.info("Raid {} ignored: gym name did not match the "
+                         "gymname_contains "
+                         "filter.".format(gym_id))
+                return
 
         # Check if raid is in geofences
         raid['geofence'] = self.check_geofences('Raid', lat, lng)
@@ -1181,7 +1208,6 @@ class Manager(object):
 
         # team id is provided either directly in webhook data or saved in cache when processing gym
         team_id = raid.get('team_id') or self.__cache.get_gym_team(gym_id)
-        gym_info = self.__cache.get_gym_info(gym_id)
         form_id = raid_pkmn['form_id']
         form = self.__locale.get_form_name(pkmn_id, form_id)
         min_cp, max_cp = get_pokemon_cp_range(pkmn_id, 20)
