@@ -99,7 +99,7 @@ class RocketMap:
             'previous_id': check_for_none(int, data.get('previous_id'), ''),
             'size_full': '?'
         }
-        if pkmn['atk'] != '?' or pkmn['def'] != '?' or pkmn['sta'] != '?':
+        if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta']) * 100) / float(45))
         else:
             pkmn['atk'], pkmn['def'], pkmn['sta'] = '?', '?', '?'
@@ -110,8 +110,13 @@ class RocketMap:
             pkmn['height'] = "{:.2f}".format(pkmn['height'])
             pkmn['weight'] = "{:.2f}".format(pkmn['weight'])
 
-        if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'T':
-            pkmn['tiny_rat'] = 'Tiny'
+        #if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'T':
+        #    pkmn['tiny_rat'] = 'Tiny'
+        if pkmn['pkmn_id'] == 19 and pkmn['weight'] <= 2.41:
+            pkmn['tiny_rat'] = 'tiny'
+
+        if pkmn['pkmn_id'] == 129 and pkmn['weight'] >= 13.13:
+            pkmn['big_karp'] = 'big'
 
         if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'B':
             pkmn['big_karp'] = 'Big'
