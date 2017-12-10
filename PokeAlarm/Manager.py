@@ -573,17 +573,14 @@ class Manager(object):
                          .format(egg['id'], level, settings['max_level']))
             return False
 
-        if dist < settings['min_dist']:
-            if self.__quiet is False:
-                log.info("Egg {} distance ({}) is less than min ({}), ignore"
-                         .format(egg['id'], dist, settings['min_dist']))
-            return False
-
-        if dist > settings['max_dist']:
-            if self.__quiet is False:
-                log.info("Egg {} distance ({}) is higher than max ({}), ignore"
-                         .format(egg['id'], dist, settings['max_dist']))
-            return False
+        if dist != 'unkn':
+            if (settings['min_dist'] <= dist <= settings['max_dist']) is False:
+                if self.__quiet is False:
+                    log.info("Egg {} rejected: distance ({:.2f}) was not in range {:.2f} to {:.2f}".format(
+                        egg['id'], dist, settings['min_dist'], settings['max_dist']))
+                return False
+        else:
+            log.debug("Egg distance was not checked because the manager has no location set.")
 
         return True
 
