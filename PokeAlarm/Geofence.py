@@ -36,7 +36,7 @@ def load_geofence_file(file_path):
                 log.error("Geofence was unable to parse this line: "
                           + "  {}".format(line))
                 log.error("All lines should be either '[name]' or 'lat,lng'.")
-                sys.exit(1)
+                raise
         geofences.append(Geofence(name, points))
         log.info("Geofence {} added!".format(name))
         return geofences
@@ -47,7 +47,7 @@ def load_geofence_file(file_path):
         log.error("Encountered error while loading Geofence: "
                   + "{}: {}".format(type(e).__name__, e))
     log.debug("Stack trace: \n {}".format(traceback.format_exc()))
-    sys.exit(1)
+    raise
 
 
 # Geofence object used to determine if points are in a defined range

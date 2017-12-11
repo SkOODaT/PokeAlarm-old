@@ -116,6 +116,15 @@ class Manager(object):
             if current_mtime != tstamp:
                 # Don't read file on first check.
                 if tstamp is not None:
+                    # Test if file is proper JSON - otherwise it might still be written to
+                    try:
+                        with open(get_path(filename), 'r') as f:
+                            x = json.load(f)
+                    except Exception as e:
+                        log.info(
+                            "File {} changed on disk but an error occurred. Retrying... {}".format(filename, repr(e)))
+                        continue
+
                     log.info("File {} changed on disk. Re-reading {}.".format(filename, cfg_type))
                     if cfg_type == "Filters":
                         # Load and Setup the Pokemon Filters
@@ -124,18 +133,26 @@ class Manager(object):
                         self.__gym_settings = {}
                         self.__raid_settings = {}
                         self.__egg_settings = {}
-                        self.load_filter_file(get_path(filename))
+                        if not self.load_filter_file(get_path(filename), startup=False):
+                            # Config has errors, retry next time
+                            continue
                     elif cfg_type == "Alarms":
                         # Create the alarms to send notifications out with
                         self.__alarms = []
-                        self.load_alarms_file(get_path(filename), int(self.__max_attempts))
+                        if not self.load_alarms_file(get_path(filename), int(self.__max_attempts)):
+                            # Config has errors, retry next time
+                            continue
                         # Conect the alarms and send the start up message
                         for alarm in self.__alarms:
                             alarm.connect()
                             alarm.startup_message()
                     elif cfg_type == "Geofences":
-                        # Create the Geofences to filter with from given file
-                        self.__geofences = load_geofence_file(get_path(filename))
+                        try:
+                            # Create the Geofences to filter with from given file
+                            self.__geofences = load_geofence_file(get_path(filename))
+                        except:
+                            # Config has errors, retry next time
+                            continue
 
                 self.watchercfg[cfg_type] = (filename, current_mtime)
 
@@ -167,7 +184,7 @@ class Manager(object):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MANAGER LOADING ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Load in a new filters file
-    def load_filter_file(self, file_path):
+    def load_filter_file(self, file_path, startup=True):
         try:
             log.info("Loading Filters from file at {}".format(file_path))
             with open(file_path, 'r') as f:
@@ -199,7 +216,7 @@ class Manager(object):
             self.__raid_settings = load_raid_section(
                 require_and_remove_key('raids', filters, "Filters file."))
 
-            return
+            return True
 
         except ValueError as e:
             log.error("Encountered error while loading Filters:"
@@ -219,9 +236,12 @@ class Manager(object):
             log.error("Encountered error while loading Filters:  "
                       + "{}: {}".format(type(e).__name__, e))
         log.debug("Stack trace: \n {}".format(traceback.format_exc()))
-        sys.exit(1)
+        if startup:
+            sys.exit(1)
+        else:
+            return False
 
-    def load_alarms_file(self, file_path, max_attempts):
+    def load_alarms_file(self, file_path, max_attempts, startup=True):
         log.info("Loading Alarms from the file at {}".format(file_path))
         try:
             with open(file_path, 'r') as f:
@@ -229,7 +249,10 @@ class Manager(object):
             if type(alarm_settings) is not list:
                 log.critical("Alarms file must be a list of Alarms objects "
                              + "- [ {...}, {...}, ... {...} ]")
-                sys.exit(1)
+                if startup:
+                    sys.exit(1)
+                else:
+                    return False
             self.__alarms = []
             for alarm in alarm_settings:
                 if parse_boolean(require_and_remove_key(
@@ -241,7 +264,7 @@ class Manager(object):
                     log.debug("Alarm not activated: {}".format(alarm['type'])
                               + " because value not set to \"True\"")
             log.info("{} active alarms found.".format(len(self.__alarms)))
-            return  # all done
+            return True  # all done
         except ValueError as e:
             log.error("Encountered error while loading Alarms file: "
                       + "{}: {}".format(type(e).__name__, e))
@@ -260,7 +283,10 @@ class Manager(object):
             log.error("Encountered error while loading Alarms: "
                       + "{}: {}".format(type(e).__name__, e))
         log.debug("Stack trace: \n {}".format(traceback.format_exc()))
-        sys.exit(1)
+        if startup:
+            sys.exit(1)
+        else:
+            return False
 
     # Check for optional arguments and enable APIs as needed
     def set_optional_args(self, line):
