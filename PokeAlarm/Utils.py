@@ -58,7 +58,7 @@ def reject_leftover_parameters(dict_, location):
         log.error("Unknown parameters at {}: ".format(location))
         log.error(dict_.keys())
         log.error("Please consult the PokeAlarm wiki for accepted parameters.")
-        sys.exit(1)
+        raise
 
 
 # Load a key from the given dict, or throw an error if it isn't there
@@ -68,7 +68,7 @@ def require_and_remove_key(key, _dict, location):
     else:
         log.error("The parameter '{}' is required for {}".format(key, location)
                   + " Please check the PokeAlarm wiki for correct formatting.")
-        sys.exit(1)
+        raise
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

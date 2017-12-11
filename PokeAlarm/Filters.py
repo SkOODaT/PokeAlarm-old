@@ -40,7 +40,7 @@ def create_multi_filter(location, FilterType, settings, default):
                 rtn.append(FilterType(named_filters[filt].copy(), default, location))
             else:
                 log.error("Unknown filter for {}: {}".format(location, str(filt)))
-                sys.exit(1)
+                raise
         return rtn
     elif isinstance(settings, basestring):
         # We got a name that can either reference a filter set or a named filter.
@@ -61,7 +61,7 @@ def create_multi_filter(location, FilterType, settings, default):
     log.error("[ {filter1}, {filter2}, {filter3} ] for multiple filters")
     log.error("or the name of either a filter or a filter set.")
     log.error("Please check the PokeAlarm documentation for more information.")
-    sys.exit(1)
+    raise
 
 
 def load_filters(settings):
@@ -83,7 +83,7 @@ def load_filters(settings):
                 fset_expanded.append(filter)
             else:
                 log.error("Unsupported filter set: {} -> {}".format(filter_set_name, str(filter)))
-                sys.exit(1)
+                raise
         filter_sets[filter_set_name] = fset_expanded
 
 
@@ -95,7 +95,7 @@ def load_pokemon_filters(settings):
         log.error("Default Pokemon filter cannot be a list '[...]'.")
         log.error("Use a dict '{...}' or filter name instead.")
         log.error("Please see PokeAlarm documentation for proper Filter file formatting.")
-        sys.exit(1)
+        raise
     default_filt = create_multi_filter("user defaults", PokemonFilter, user_defaults, pkmn_defaults)[0]
     log.info("Global Pokemon defaults: {}".format(default_filt.to_string()))
     default = default_filt.to_dict()
@@ -108,11 +108,11 @@ def load_pokemon_filters(settings):
             log.error("Unable to find pokemon named '{}'...".format(name))
             log.error("Please see PokeAlarm documentation for "
                       + "proper Filter file formatting.")
-            sys.exit(1)
+            raise
         if pkmn_id in filters:
             log.error("Multiple entries detected for Pokemon #{}"
                       + " Please remove any extra names.").format(pkmn_id)
-            sys.exit(1)
+            raise
         f = create_multi_filter(name, PokemonFilter, settings[name], default)
         if f is not None:
             filters[pkmn_id] = f
@@ -194,7 +194,7 @@ def load_egg_section(settings):
 
     if not isinstance(egg['contains'], list):
             log.error("'gymname_contains' filter must be a list")
-            sys.exit(1)
+            raise
 
     log.debug("Report eggs level {}-{}, distance {}-{}".format(egg['min_level'], egg['max_level'], egg['min_dist'],
                                                                egg['max_dist']))
@@ -212,7 +212,7 @@ def load_raid_section(settings):
 
     if not isinstance(raid['contains'], list):
             log.error("'gymname_contains' filter must be a list")
-            sys.exit(1)
+            raise
 
     # load any raid pokemon filters
     filters = load_pokemon_filters(settings)
@@ -474,7 +474,7 @@ class PokemonFilter(Filter):
             log.error("Moves list must be in a comma seperated array. "
                       + "Ex: [\"Move\",\"Move\"]. Please see PokeAlarm "
                       + "documentation for more examples.")
-            sys.exit(1)
+            raise
         list_ = set()
         for move_name in moves:
             move_id = get_move_id(move_name)
@@ -484,7 +484,7 @@ class PokemonFilter(Filter):
                 log.error("{} is not a valid move name.".format(move_name)
                           + "Please see documentation for accepted move "
                           + "names and correct your Filters file.")
-                sys.exit(1)
+                raise
         return list_
 
     @staticmethod
@@ -510,7 +510,7 @@ class PokemonFilter(Filter):
                 log.error("{} is not a valid size name.".format(size))
                 log.error("Please use one of the following: "
                           + "{}".format(valid_sizes))
-                sys.exit(1)
+                raise
         return list_
 
     @staticmethod
@@ -540,7 +540,7 @@ class PokemonFilter(Filter):
                 log.error("{} is not a valid gender name.".format(gender))
                 log.error("Please use one of the following: "
                           + "{}".format(valid_genders))
-                sys.exit(1)
+                raise
         return list_
 
     @staticmethod
@@ -554,7 +554,7 @@ class PokemonFilter(Filter):
             except TypeError:
                 log.error("{} is not a valid form.".format(form_id))
                 log.error("Please use an integer to represent form filters.")
-                sys.exit(1)
+                raise
         return list_
 
 
@@ -618,7 +618,7 @@ class GymFilter(Filter):
         if type(settings) != list:
             log.error("Gym names must be specified in an array. EX: "
                       + "[\"Valor\", \"Instinct\"]")
-            sys.exit(1)
+            raise
         s = set()
         for team in settings:
             team_id = get_team_id(team)
@@ -628,5 +628,5 @@ class GymFilter(Filter):
                 log.error("{} is not a valid team name.".format(team)
                           + "Please see documentation for accepted team "
                           + "names and correct your Filters file.")
-                sys.exit(1)
+                raise
         return s
