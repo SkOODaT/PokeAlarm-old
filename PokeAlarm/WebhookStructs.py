@@ -9,6 +9,8 @@ from Utils import get_gmaps_link, get_move_damage, get_move_dps, get_move_durati
     get_move_energy, get_pokemon_gender, get_pokemon_size, get_pokemon_size_full, \
     get_pkmn_name, get_unown_name, get_applemaps_link
 
+from pgoapi.protos.pogoprotos.map.weather.gameplay_weather_pb2 import *
+
 log = logging.getLogger('WebhookStructs')
 
 
@@ -97,6 +99,7 @@ class RocketMap:
             'rating_attack': data.get('rating_attack'),
             'rating_defense': data.get('rating_defense'),
             'previous_id': check_for_none(int, data.get('previous_id'), ''),
+            'weather_id': check_for_none(int, data.get('weather_id'), 0),
             'size_full': '?'
         }
         if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
@@ -139,6 +142,11 @@ class RocketMap:
         # Todo: Remove this when monocle get's it's own standard
         if pkmn['form_id'] == 0:
             pkmn['form_id'] = '?'
+
+        if pkmn['weather_id'] >= 1:
+            pkmn['weather_id'] = GameplayWeather.WeatherCondition.Name(int(pkmn['weather_id']))
+        else:
+            pkmn['weather_id'] = '?'
 
         return pkmn
 
