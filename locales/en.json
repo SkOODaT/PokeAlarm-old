@@ -1,5 +1,6 @@
 {
   "weather_names": {
+    "0": "None",
     "1": "Sunny",
     "2": "Rain",
     "3": "Partly Cloudy",
