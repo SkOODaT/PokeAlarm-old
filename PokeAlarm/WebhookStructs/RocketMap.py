@@ -102,7 +102,8 @@ class RocketMap:
             'rating_defense': data.get('rating_defense'),
             'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), 'unkn'),
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), 'unkn'),
-            'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn')
+            'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), 'unkn'),
+            'weather': check_for_none(int, data.get('weather'), 'unkn')
         }
         if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta'])
