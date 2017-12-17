@@ -87,4 +87,4 @@ class Locale(object):
 
     # Returns the name of the form of for the given Pokemon ID and Form ID
     def get_weather_name(self, weather_id):
-        return self.__weather_names.get(weather_id, 'unknown')
+        return self.__weather_names.get(weather_id, '')
