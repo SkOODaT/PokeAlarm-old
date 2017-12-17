@@ -830,6 +830,8 @@ class Manager(object):
         iv = pkmn['iv']
         form_id = pkmn['form_id']
         form = self.__locale.get_form_name(pkmn_id, form_id)
+        weather_id = pkmn['weather_id']
+        weather_name = self.__locale.get_weather_name(weather_id)
 
         pkmn.update({
             'pkmn': name,
@@ -847,7 +849,8 @@ class Manager(object):
             'form_id_or_empty': '' if form_id == '?' else '{:03}'.format(
                 form_id),
             'form': form,
-            'form_or_empty': '' if form == 'unknown' else form
+            'form_or_empty': '' if form == 'unknown' else form,
+            'weather_name': weather_name
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -1136,17 +1139,20 @@ class Manager(object):
                                  " {:.2f} to {:.2f} (F #{})".format(dist, filt.min_dist, filt.max_dist, filt_ct))
                     continue
             else:
-                log.debug("Gym dist was not checked because the manager has no location set.")
+                log.debug("Gym dist was not checked because the manager "
+                          + "has no location set.")
 
             # Check the old team
             if filt.check_from_team(from_team_id) is False:
                 if self.__quiet is False:
-                    log.info("Gym rejected: {} as old team is not correct (F #{})".format(old_team, filt_ct))
+                    log.info("Gym rejected: {} as old team is not correct "
+                             " (F #{})".format(old_team, filt_ct))
                 continue
             # Check the new team
             if filt.check_to_team(to_team_id) is False:
                 if self.__quiet is False:
-                    log.info("Gym rejected: {} as current team is not correct (F #{})".format(cur_team, filt_ct))
+                    log.info("Gym rejected: {} as current team is not correct "
+                             "(F #{})".format(cur_team, filt_ct))
                 continue
 
             # Nothing left to check, so it must have passed
@@ -1173,7 +1179,8 @@ class Manager(object):
                     log.info("Gym update ignored: located outside geofences.")
                 return
         else:
-            log.debug("Gym inside geofences was not checked because no geofences were set.")
+            log.debug("Gym inside geofences was not checked because "
+                      + " no geofences were set.")
 
         if gym_info['is_in_battle'] == 'True':
             gym_info['is_in_battle'] = '[' + cur_team+ ']' + ' **Gym In Battle!**'
@@ -1204,10 +1211,12 @@ class Manager(object):
         })
 
         if self.__loc_service:
-            self.__loc_service.add_optional_arguments(self.__location, [lat, lng], gym_info)
+            self.__loc_service.add_optional_arguments(
+                    self.__location, [lat, lng], gym_info)
 
         if self.__quiet is False:
-            log.info("Gym ({}) notification has been triggered!".format(gym_id))
+            log.info("Gym ({}) ".format(gym_id)
+                     + " notification has been triggered!")
 
         threads = []
         # Spawn notifications in threads so they can work in background

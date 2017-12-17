@@ -58,6 +58,13 @@ class Locale(object):
                     form_id, form_name)
         log.debug("Loaded '{}' locale successfully!".format(language))
 
+        # Weather ID -> Weather Name
+        self.__weather_names = {}
+        wnames = info.get("weather_names", {})
+        for id_,val in default["weather_names"].iteritems():
+            self.__weather_names[int(id_)] = wnames.get(id_, val)
+
+
     # Returns the name of the Pokemon associated with the given ID
     def get_pokemon_name(self, pokemon_id):
         return self.__pokemon_names.get(pokemon_id, '?')
@@ -77,3 +84,7 @@ class Locale(object):
     # Returns the name of the form of for the given Pokemon ID and Form ID
     def get_form_name(self, pokemon_id, form_id):
         return self.__form_names.get(pokemon_id, {}).get(form_id, '')
+
+    # Returns the name of the form of for the given Pokemon ID and Form ID
+    def get_weather_name(self, weather_id):
+        return self.__weather_names.get(weather_id, 'unknown')

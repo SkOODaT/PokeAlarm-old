@@ -106,7 +106,6 @@ def get_unown_name(form_id):
                     return j[pb]
                     break
 
-
 # Returns the id corresponding with the pokemon name
 # (use all locales for flexibility)
 def get_pkmn_id(pokemon_name):
