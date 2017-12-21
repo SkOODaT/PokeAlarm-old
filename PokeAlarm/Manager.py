@@ -832,6 +832,11 @@ class Manager(object):
         form = self.__locale.get_form_name(pkmn_id, form_id)
         weather_id = pkmn['weather_id']
         weather_name = self.__locale.get_weather_name(weather_id)
+        weather_emoji = self.__locale.get_weather_emoji(weather_id)
+        if weather_name == 'None':
+            weather_name = ''
+        else:
+            weather_name = '[' + weather_emoji + ' ' + weather_name + ']\n'
 
         pkmn.update({
             'pkmn': name,
@@ -850,7 +855,9 @@ class Manager(object):
                 form_id),
             'form': form,
             'form_or_empty': '' if form == 'unknown' else form,
-            'weather_name': weather_name
+            'weather_id': weather_id,
+            'weather_name': weather_name,
+            'weather_emoji': weather_emoji
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
