@@ -2,7 +2,24 @@
   {
     "active": "False",
     "type": "discord",
-    "webhook_url": "YOUR_WEBHOOK_URL"
+    "webhook_url": "YOUR_WEBHOOK_URL",
+    "startup_message":"False",
+    "pokemon":{
+    "username":"#<pkmn_id> <previous_id> <pkmn> <gender> <weather_emoji>",
+    "icon_url" : "http://<pkmn_id>.png",
+    "avatar_url": "http://<pkmn_id>.png",
+    "title":"[<neighborhood>] <address> (<postal>)",
+    "url":"<gmaps>",
+    "body": "[<12h_time> (<time_left> Left)]\n<weather_name>[<gender>]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+		"color": "<iv_0>",
+		"map": {
+			"enabled":"true",
+			"width":"250",
+			"height":"125",
+			"maptype":"roadmap",
+			"zoom": "14"
+		}
+	},
   },
   {
     "active": "False",
