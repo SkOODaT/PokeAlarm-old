@@ -5,20 +5,97 @@
     "webhook_url": "YOUR_WEBHOOK_URL",
     "startup_message":"False",
     "pokemon":{
-    "username":"#<pkmn_id> <previous_id> <pkmn> <gender> <weather_emoji>",
-    "icon_url" : "http://<pkmn_id>.png",
-    "avatar_url": "http://<pkmn_id>.png",
-    "title":"[<neighborhood>] <address> (<postal>)",
-    "url":"<gmaps>",
-    "body": "[<12h_time> (<time_left> Left)]\n<weather_name>[<gender>]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
-		"color": "<iv_0>",
-		"map": {
-			"enabled":"true",
-			"width":"250",
-			"height":"125",
-			"maptype":"roadmap",
-			"zoom": "14"
-		}
+  		"username":"#<pkmn_id> <previous_id> <pkmn> <gender> <iv>% <cp>CP",
+  		"icon_url" : "http://sprites/<pkmn_id>.png",
+      "avatar_url": "http://sprites/<pkmn_id>.png",
+  		"title":"[<neighborhood>] <address> (<postal>)",
+  		"url":"<gmaps>",
+      "body": "[<12h_time> (<time_left> Left)]\n[IV: **<iv>%** <atk>/<def>/<sta>] [CP: **<cp>**/Lv: **<level>**]\n[**<quick_move>**/**<charge_move>** Rating: **<rating_attack>**/**<rating_defense>**]\n[**<size_full>** <gender>/<height>m/<weight>kg]\n[Poke: <catch_prob_1>%/Great: <catch_prob_2>%/Ultra: <catch_prob_3>%]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"color": "<iv_0>",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "14"
+  		}
+  	},
+    "pokestop":{
+  		"username":"Pokestop [<deployer>]",
+  		"icon_url" : "<url>",
+      "avatar_url": "http://sprites/pokestop.png",
+  		"title":"[<neighborhood>] <address> <postal>",
+  		"url":"<gmaps>",
+  		"body":"[<12h_time> (<time_left> Left)]\n[Lured By: **<deployer>**]\n[<name> (<description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "14"
+  		}
+  	},
+    "gym":{
+  		"username":"<new_team> Gym [<slots_available> Slots]",
+  		"icon_url" : "<gym_url>",
+      "avatar_url": "http://sprites/gym_<new_team>.png",
+  		"title":"[<neighborhood>] <address> (<postal>)",
+  		"url":"<gmaps>",
+  		"body": "<is_in_battle><teamStr>\n[<gym_name> (<gym_description>)]\n[Gym CP:<points>] [<slots_available> Slots Open]\n[Defender: <guard_pkmn_id>]\n<defenders>[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "14"
+  		}
+  	},
+    "egg":{
+  		"username":"Lv: <raid_level> RaidEgg [<team_name>] [<slots_available> Slots]",
+  		"icon_url" : "<gym_url>",
+      "avatar_url": "http://sprites/egg_<raid_level>.png",
+  		"title":"[<neighborhood>] <address> (<postal>)",
+  		"url":"<gmaps>",
+  		"body": "[<begin_12h_time> (<begin_time_left>)]\n[Lv: <raid_level> Egg]\n[<team_name> Gym] [<slots_available> Slots Open]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "14"
+  		}
+  	},
+  	"raid":{
+  		"username":"#<pkmn_id> <pkmn> RaidHatch <cp>CP",
+  		"icon_url" : "<gym_url>",
+      "avatar_url": "http://sprites/<pkmn_id>.png",
+  		"title":"[<neighborhood>] <address> (<postal>)",
+  		"url":"<gmaps>",
+  		"body": "[<12h_time> (<time_left> left)]\n[Lv: <raid_level>] [CP: <cp>]\n[<quick_move>] [<charge_move>]\n[<team_name> Gym]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "14"
+  		}
+  	},
+    "weather":{
+  		"username":"Weather Changed To <weather_emoji> <weather_name>",
+  		"icon_url" : "http://<weather_name>.png",
+      "avatar_url": "http://<weather_name>.png",
+  		"title":"Center Of Weather S2Cell [<neighborhood>]",
+  		"url":"<gmaps>",
+  		"body": "Gameplay Weather: <weather_emoji> <weather_name>\nCloud Level: <cloud_level>\nRain Level: <rain_level>\nWind Level: <wind_level>\nSnow Level: <snow_level>\nFog Level: <fog_level>\nWind Direction: <wind_direction>\nSeverity: <severity>\nWarning: <warn_weather>\nWorld Time: <world_time>",
+  		"color": "<weather_name>",
+  		"map": {
+  			"enabled":"true",
+  			"width":"250",
+  			"height":"125",
+  			"maptype":"roadmap",
+  			"zoom": "12"
+  		}
+  	}
 	},
   },
   {

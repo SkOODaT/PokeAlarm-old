@@ -13,6 +13,10 @@
         "enabled":"False",
         "filters":{ "min_dist":"0", "max_dist":"10" }
     },
+    "weather":{
+        "enabled":"False",
+        "filters":{ "min_dist":"0", "max_dist":"10" }
+    },
     "pokemon":{
         "enabled":"False",
         "default": {
