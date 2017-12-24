@@ -80,11 +80,11 @@ class Cache(object):
         self._raid_hist[gym_id] = expiration
 
     def get_weather_change(self, weather_id):
-        """ Returns the datetime that the pokemon expires. """
-        return self._weather_hist.get(weather_id)
+        """ Get the current weather id. """
+        return self._weather_hist.get(weather_id, '?')
 
     def update_weather_change(self, weather_id, gameplayweather):
-        """ Updates the datetime that the pokestop expires. """
+        """ Update the current weather id. """
         self._weather_hist[weather_id] = gameplayweather
 
     def clean_and_save(self):

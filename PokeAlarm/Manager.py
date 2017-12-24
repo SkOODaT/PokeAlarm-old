@@ -1505,12 +1505,22 @@ class Manager(object):
 
         weather_id = weather['id']
 
-        # Check for previously processed
-        if self.__cache.get_weather_change(weather_id) is not None:
-            log.debug("Weather was skipped because "
-                      + "it was previously processed.")
+        # Extract some basic information
+        to_weather_id = weather['new_weather_id']
+        from_weather_id = self.__cache.get_weather_change(weather_id)
+
+        # Update weather's last known id
+        self.__cache.update_weather_change(weather_id, to_weather_id)
+
+        # Doesn't look like anything to me
+        if to_weather_id == from_weather_id:
+            log.debug("Weather ignored: no change detected")
             return
-        self.__cache.update_weather_change(weather_id, weather['gameplay_weather'])
+
+        # Ignore first time updates
+        if from_weather_id is '?':
+            log.debug("Weather update ignored: first time seeing this weather id")
+            return
 
         # Extract some basic information
         lat, lng = weather['lat'], weather['lng']
