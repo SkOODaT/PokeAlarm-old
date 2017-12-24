@@ -431,6 +431,8 @@ class Manager(object):
                     self.process_egg(obj)
                 elif kind == "raid":
                     self.process_raid(obj)
+                elif kind == "weather":
+                    self.process_weather(obj)
                 elif kind == "location":
                     self.process_location(obj)
                 else:
@@ -1487,6 +1489,11 @@ class Manager(object):
 
         for thread in threads:
             thread.join()
+
+    def process_weather(self, weather):
+        weather.update({
+
+        })
 
     def process_location(self, coords):
         loc_str = "{}, {}".format(coords['latitude'], coords['longitude'])

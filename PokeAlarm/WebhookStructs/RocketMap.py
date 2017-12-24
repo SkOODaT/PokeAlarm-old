@@ -43,6 +43,8 @@ class RocketMap:
                           + " This format not supported at this time.")
             elif kind == 'location':
                 return RocketMap.location(data.get('message'))
+            elif kind == 'weather':
+                return RocketMap.weather(data.get('message'))
             #else:
             #    log.error("Invalid type specified ({}). ".format(kind)
             #              + "Are you using the correct map type?")
@@ -364,6 +366,34 @@ class RocketMap:
         raid['applemaps'] = get_applemaps_link(raid['lat'], raid['lng'])
 
         return raid
+
+    @staticmethod
+    def weather(data):
+        log.debug("Converting to weather: \n {}".format(data))
+        weather = {
+            'type': "weather",
+            'id': data['s2_cell_id'],
+            'lat': float(data['latitude']),
+            'lng': float(data['longitude']),
+            'lat_5': "{:.5f}".format(float(data['latitude'])),
+            'lng_5': "{:.5f}".format(float(data['longitude'])),
+            'cloud_level': check_for_none(int, data.get('cloud_level'), '?'),
+            'rain_level': check_for_none(int, data.get('rain_level'), '?'),
+            'wind_level': check_for_none(int, data.get('wind_level'), ''),
+            'snow_level': check_for_none(int, data.get('snow_level'), '?'),
+            'fog_level': check_for_none(int, data.get('fog_level'), '?'),
+            'wind_direction': check_for_none(int, data.get('wind_direction'), '?'),
+            'gameplay_weather': check_for_none(int, data.get('gameplay_weather'), '?'),
+            'severity': check_for_none(int, data.get('severity'), '?'),
+            'warn_weather': check_for_none(int, data.get('warn_weather'), '?'),
+            'world_time': check_for_none(int, data.get('world_time'), '?')
+        }
+
+        weather['gmaps'] = get_gmaps_link(weather['lat'], weather['lng'])
+        weather['applemaps'] = get_applemaps_link(weather['lat'], weather['lng'])
+
+        return weather
+
     @staticmethod
     def location(data):
         data['type'] = 'location'
