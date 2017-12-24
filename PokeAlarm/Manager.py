@@ -18,7 +18,8 @@ import gipc
 from Alarms import alarm_factory
 from Cache import cache_factory
 from Filters import load_pokemon_section, load_pokestop_section, \
-    load_gym_section, load_egg_section, load_raid_section, load_filters
+    load_gym_section, load_egg_section, load_raid_section, load_weather_section, \
+    load_filters
 from Geofence import load_geofence_file
 from Locale import Locale
 from LocationServices import location_service_factory
@@ -77,6 +78,7 @@ class Manager(object):
         self.__gym_settings = {}
         self.__raid_settings = {}
         self.__egg_settings = {}
+        self.__weather_settings = {}
         self.load_filter_file(get_path(filter_file))
 
         # Create the Geofences to filter with from given file
@@ -133,6 +135,7 @@ class Manager(object):
                         self.__gym_settings = {}
                         self.__raid_settings = {}
                         self.__egg_settings = {}
+                        self.__weather_settings = {}
                         if not self.load_filter_file(get_path(filename), startup=False):
                             # Config has errors, retry next time
                             continue
@@ -215,6 +218,10 @@ class Manager(object):
             # Load in the Raid Section
             self.__raid_settings = load_raid_section(
                 require_and_remove_key('raids', filters, "Filters file."))
+
+            # Load in the Raid Section
+            self.__weather_settings = load_weather_section(
+                require_and_remove_key('weather', filters, "Filters file."))
 
             return True
 
@@ -1491,9 +1498,81 @@ class Manager(object):
             thread.join()
 
     def process_weather(self, weather):
-        weather.update({
+        # Make sure that pokemon are enabled
+        if self.__weather_settings['enabled'] is False:
+            log.debug("Weather ignored: weather notifications are disabled.")
+            return
 
+        weather_id = weather['id']
+
+        # Check for previously processed
+        if self.__cache.get_weather_change(weather_id) is not None:
+            log.debug("Weather was skipped because "
+                      + "it was previously processed.")
+            return
+        self.__cache.update_weather_change(weather_id, weather['gameplay_weather'])
+
+        # Extract some basic information
+        lat, lng = weather['lat'], weather['lng']
+        dist = get_earth_dist([lat, lng], self.__location)
+        passed = False
+        filters = self.__weather_settings['filters']
+        for filt_ct in range(len(filters)):
+            filt = filters[filt_ct]
+            # Check the distance from the set location
+            if dist != 'unkn':
+                if filt.check_dist(dist) is False:
+                    if self.__quiet is False:
+                        log.info("Weather rejected: distance "
+                                 + "({:.2f}) was not in range".format(dist) +
+                                 " {:.2f} to {:.2f} (F #{})".format(
+                                     filt.min_dist, filt.max_dist, filt_ct))
+                    continue
+            else:
+                log.debug("Weather dist was not checked because the manager "
+                          + " has no location set.")
+
+            # Nothing left to check, so it must have passed
+            passed = True
+            log.debug("Weather passed filter #{}".format(filt_ct))
+            break
+
+        if not passed:
+            return
+
+        # Check the geofences
+        weather['geofence'] = self.check_geofences('Weather', lat, lng)
+        if len(self.__geofences) > 0 and stop['geofence'] == 'unknown':
+            log.info("Weather rejected: not within any specified geofence")
+            return
+        weather_info = weather['gameplay_weather']
+        weather_name = self.__locale.get_weather_name(weather_info)
+        weather_emoji = self.__locale.get_weather_emoji(weather_info)
+
+        weather.update({
+            "dist": get_dist_as_str(dist),
+            'weather_info': weather_info,
+            'weather_name': weather_name,
+            'weather_emoji': weather_emoji,
+            'dir': get_cardinal_dir([lat, lng], self.__location),
         })
+
+        if self.__loc_service:
+            self.__loc_service.add_optional_arguments(
+                self.__location, [lat, lng], weather)
+
+        if self.__quiet is False:
+            log.info("Weather ({})".format(weather_id)
+                     + " notification has been triggered!")
+
+        threads = []
+        # Spawn notifications in threads so they can work in background
+        for alarm in self.__alarms:
+            threads.append(gevent.spawn(alarm.weather_alert, weather))
+            gevent.sleep(0)  # explict context yield
+
+        for thread in threads:
+            thread.join()
 
     def process_location(self, coords):
         loc_str = "{}, {}".format(coords['latitude'], coords['longitude'])

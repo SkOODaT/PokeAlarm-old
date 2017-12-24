@@ -76,6 +76,21 @@ class DiscordAlarm(Alarm):
             'url': "<gmaps>",
             'body': "The raid is available until <24h_time> (<time_left>).",
             'color': "<team_name>"
+        },
+        'weather': {
+            'username': "Weather",
+            'content': "",
+            'icon_url': get_image_url("weather/weather.png"),
+            'avatar_url': get_image_url("weather/weather.png"),
+            'title': "Center Of Weather Cell [<neighborhood>]",
+            'url': "<gmaps>",
+            'body': "Gameplay Weather: <weather_emoji> <weather_name>\nCloud " +
+                        "Level: <cloud_level>\nRain Level: <rain_level>\nWind " +
+                        "Level: <wind_level>\nSnow Level: <snow_level>\nFog " +
+                        "Level: <fog_level>\nWind Direction: <wind_direction>\n" +
+                        "Severity: <severity>\nWarning: <warn_weather>\n" +
+                        "World Time: <world_time>",
+            'color': "<weather_name>"
         }
     }
 
@@ -106,6 +121,8 @@ class DiscordAlarm(Alarm):
             settings.pop('egg', {}), self._defaults['egg'])
         self.__raid = self.create_alert_settings(
             settings.pop('raid', {}), self._defaults['raid'])
+        self.__weather = self.create_alert_settings(
+            settings.pop('weather', {}), self._defaults['weather'])
 
         # Warn user about leftover parameters
         reject_leftover_parameters(settings, "'Alarm level in Discord alarm.")
@@ -204,6 +221,10 @@ class DiscordAlarm(Alarm):
 
     def raid_alert(self, raid_info):
         self.send_alert(self.__raid, raid_info)
+
+    def weather_alert(self, weather_info):
+        log.debug("weather notification triggered.")
+        self.send_alert(self.__weather, weather_info)
 
     # Send a payload to the webhook url
     def send_webhook(self, url, payload):

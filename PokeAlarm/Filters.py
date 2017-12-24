@@ -220,6 +220,20 @@ def load_raid_section(settings):
 
     return raid
 
+def load_weather_section(settings):
+    log.info("Setting Weather filters...")
+    weather = {
+        "enabled": bool(parse_boolean(require_and_remove_key(
+            'enabled', settings, 'Weather')) or False),
+        "filters": create_multi_filter(
+            'Weather --> filters', WeatherFilter,
+            settings.pop('filters', "False"), WeatherFilter.get_defaults())
+    }
+
+    reject_leftover_parameters(settings, "Weather section of Filters file.")
+    for i in range(len(weather['filters'])):
+        log.debug("F#{}: ".format(i) + weather['filters'][i].to_string())
+    return weather
 
 # Base filter class. Every filter may contain at least these criteria.
 class Filter(object):
@@ -639,3 +653,12 @@ class GymFilter(Filter):
                           + "names and correct your Filters file.")
                 raise
         return s
+
+# Pokestop Filter determines when Pokestop notifications will be triggered.
+class WeatherFilter(Filter):
+
+    def __init__(self, settings, default, location):
+        super(WeatherFilter, self).__init__(settings, default, location)
+
+        reject_leftover_parameters(settings, "Weather filter in "
+                                   + "{}".format(location))

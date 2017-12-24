@@ -346,6 +346,20 @@ def get_color(color_id):
                 color_ = 0xff66ff
             elif color_id == "Pikachu":
                 color_ = 0xF6F006
+            elif color_id == "Clear":
+                color_ = 0xF6F006
+            elif color_id == "Rain":
+                color_ = 0x012cff
+            elif color_id == "Partly Cloudy":
+                color_ = 0x9d9d9d
+            elif color_id == "Cloudy":
+                color_ = 0x9d9d9d
+            elif color_id == "Windy":
+                color_ = 0xffffff
+            elif color_id == "Snow":
+                color_ = 0x00ecff
+            elif color_id == "Fog":
+                color_ = 0x7a8687
             elif color_id[-1] == 's' or color_id[-1] == 'm':
                 color_ = 0xff66ff
             else:
