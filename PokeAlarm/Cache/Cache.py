@@ -87,6 +87,14 @@ class Cache(object):
         """ Update the current weather id. """
         self._weather_hist[weather_id] = gameplayweather
 
+    def get_weather_achange(self, weather_id):
+        """ Get the current weather id. """
+        return self._weather_hist.get(weather_id, '?')
+
+    def update_weather_achange(self, weather_id, severity):
+        """ Update the current weather id. """
+        self._weather_hist[weather_id] = severity
+
     def clean_and_save(self):
         """ Cleans the cache and saves the contents if capable. """
         self._clean_hist()

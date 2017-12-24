@@ -25,7 +25,7 @@ from Locale import Locale
 from LocationServices import location_service_factory
 from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path,\
     get_time_as_str, require_and_remove_key, parse_boolean, contains_arg, \
-    get_pokemon_cp_range
+    get_pokemon_cp_range, degrees_to_cardinal
 # Local Imports
 from . import config
 
@@ -1506,19 +1506,19 @@ class Manager(object):
         weather_id = weather['id']
 
         # Extract some basic information
-        to_weather_id = weather['new_weather_id']
-        from_weather_id = self.__cache.get_weather_change(weather_id)
+        to_gameplay_weather = weather['new_gameplay_weather']
+        from_gameplay_weather = self.__cache.get_weather_change(weather_id)
 
         # Update weather's last known id
-        self.__cache.update_weather_change(weather_id, to_weather_id)
+        self.__cache.update_weather_change(weather_id, to_gameplay_weather)
 
         # Doesn't look like anything to me
-        if to_weather_id == from_weather_id:
+        if to_gameplay_weather == from_gameplay_weather:
             log.debug("Weather ignored: no change detected")
             return
 
         # Ignore first time updates
-        if from_weather_id is '?':
+        if from_gameplay_weather is '?':
             log.debug("Weather update ignored: first time seeing this weather id")
             return
 
@@ -1555,14 +1555,25 @@ class Manager(object):
         if len(self.__geofences) > 0 and stop['geofence'] == 'unknown':
             log.info("Weather rejected: not within any specified geofence")
             return
+
         weather_info = weather['gameplay_weather']
+        wind_info = weather['wind_direction']
+        severity_info = weather['severity']
+        day_info = weather['world_time']
+
         weather_name = self.__locale.get_weather_name(weather_info)
+        wind_berring = degrees_to_cardinal(wind_info)
+        severity_name = self.__locale.get_weather_severity(severity_info)
+        time_name = self.__locale.get_world_time(day_info)
         weather_emoji = self.__locale.get_weather_emoji(weather_info)
 
         weather.update({
             "dist": get_dist_as_str(dist),
             'weather_info': weather_info,
             'weather_name': weather_name,
+            'severity_name': severity_name,
+            'time_name': time_name,
+            'wind_berring': wind_berring,
             'weather_emoji': weather_emoji,
             'dir': get_cardinal_dir([lat, lng], self.__location),
         })

@@ -86,7 +86,7 @@
       "avatar_url": "http://<weather_name>.png",
   		"title":"Center Of Weather S2Cell [<neighborhood>]",
   		"url":"<gmaps>",
-  		"body": "Gameplay Weather: <weather_emoji> <weather_name>\nCloud Level: <cloud_level>\nRain Level: <rain_level>\nWind Level: <wind_level>\nSnow Level: <snow_level>\nFog Level: <fog_level>\nWind Direction: <wind_direction>\nSeverity: <severity>\nWarning: <warn_weather>\nWorld Time: <world_time>",
+  		"body": "Gameplay Weather: <weather_emoji> <weather_name>\nCloud Level: <cloud_level>\nRain Level: <rain_level>\nWind Level: <wind_level>\nSnow Level: <snow_level>\nFog Level: <fog_level>\nWind Direction: <wind_berring>\nSeverity: <severity_name>\nWarning: <warn_weather>\nWorld Time: <time_name>",
   		"color": "<weather_name>",
   		"map": {
   			"enabled":"true",

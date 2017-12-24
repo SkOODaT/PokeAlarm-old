@@ -384,7 +384,7 @@ class RocketMap:
             'fog_level': check_for_none(int, data.get('fog_level'), '?'),
             'wind_direction': check_for_none(int, data.get('wind_direction'), '?'),
             'gameplay_weather': check_for_none(int, data.get('gameplay_weather'), '?'),
-            'new_weather_id': int(data.get('gameplay_weather', data.get('gameplayweather'))),
+            'new_gameplay_weather': int(data.get('gameplay_weather', data.get('gameplayweather'))),
             'severity': check_for_none(int, data.get('severity'), '?'),
             'warn_weather': check_for_none(int, data.get('warn_weather'), '?'),
             'world_time': check_for_none(int, data.get('world_time'), '?')

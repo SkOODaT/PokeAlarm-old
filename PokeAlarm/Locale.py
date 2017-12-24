@@ -91,6 +91,14 @@ class Locale(object):
     def get_weather_name(self, weather_id):
         return self.__weather_names.get(weather_id, 'None')
 
+    # Returns the name of the form of for the given Pokemon ID and Form ID
+    def get_severity_name(self, severity):
+        return self.__severity_names.get(severity, 'None')
+
+    # Returns the name of the form of for the given Pokemon ID and Form ID
+    def get_time_name(self, world_time):
+        return self.__world_time.get(world_time, 'None')
+
     # Returns the emoji of the weather condition
     def get_weather_emoji(self, weather_id):
         emojis = {

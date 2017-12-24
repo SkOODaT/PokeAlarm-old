@@ -431,6 +431,11 @@ def get_cardinal_dir(pt_a, pt_b=None):
         sin(lng2 - lng1) * cos(lat2))) + 450) % 360
     return directions[int(round(bearing / 45))]
 
+def degrees_to_cardinal(d):
+    dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    ix = int((d + 11.25)/22.5 - 0.02)
+    return dirs[ix % 16]
 
 # Return the distance formatted correctly
 def get_dist_as_str(dist):

@@ -9,6 +9,16 @@
     "6": "Snow",
     "7": "Fog"
   },
+  "weather_severity": {
+    "0": "None",
+    "1": "Moderate",
+    "2": "Extreme"
+  },
+  "world_time": {
+    "0": "None",
+    "1": "Day",
+    "2": "Night"
+  },
   "forms": {
     "201": {
       "1": "A",
