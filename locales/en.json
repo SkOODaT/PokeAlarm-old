@@ -9,15 +9,20 @@
     "6": "Snow",
     "7": "Fog"
   },
-  "weather_severity": {
-    "0": "None",
+  "severity_names": {
     "1": "Moderate",
     "2": "Extreme"
   },
-  "world_time": {
+  "world_times": {
     "0": "None",
     "1": "Day",
     "2": "Night"
+  },
+  "display_levels": {
+    "0": "None",
+    "1": "Low",
+    "2": "Medium",
+    "3": "High"
   },
   "forms": {
     "201": {

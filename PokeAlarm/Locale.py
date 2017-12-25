@@ -66,6 +66,24 @@ class Locale(object):
         for id_,val in default["weather_names"].iteritems():
             self.__weather_names[int(id_)] = wnames.get(id_, val)
 
+        # Weather ID -> Weather Name
+        self.__display_levels = {}
+        dlevels = info.get("display_levels", {})
+        for id_,val in default["display_levels"].iteritems():
+            self.__display_levels[int(id_)] = dlevels.get(id_, val)
+
+        # Weather ID -> Weather Name
+        self.__severity_names = {}
+        snames = info.get("severity_names", {})
+        for id_,val in default["severity_names"].iteritems():
+            self.__severity_names[int(id_)] = snames.get(id_, val)
+
+        # Weather ID -> Weather Name
+        self.__world_times = {}
+        wnames = info.get("world_times", {})
+        for id_,val in default["world_times"].iteritems():
+            self.__world_times[int(id_)] = wnames.get(id_, val)
+
 
     # Returns the name of the Pokemon associated with the given ID
     def get_pokemon_name(self, pokemon_id):
@@ -87,17 +105,21 @@ class Locale(object):
     def get_form_name(self, pokemon_id, form_id):
         return self.__form_names.get(pokemon_id, {}).get(form_id, '')
 
-    # Returns the name of the form of for the given Pokemon ID and Form ID
+    # Returns the name of the weather of for the given weather ID
     def get_weather_name(self, weather_id):
         return self.__weather_names.get(weather_id, 'None')
 
-    # Returns the name of the form of for the given Pokemon ID and Form ID
+    # Returns the name of the display level of for the given weather level ID
+    def get_display_name(self, level):
+        return self.__display_levels.get(level, 'None')
+
+    # Returns the name of the severity of for the given severity ID
     def get_severity_name(self, severity):
         return self.__severity_names.get(severity, 'None')
 
-    # Returns the name of the form of for the given Pokemon ID and Form ID
+    # Returns the name of the time of for the given world_time ID
     def get_time_name(self, world_time):
-        return self.__world_time.get(world_time, 'None')
+        return self.__world_times.get(world_time, 'None')
 
     # Returns the emoji of the weather condition
     def get_weather_emoji(self, weather_id):

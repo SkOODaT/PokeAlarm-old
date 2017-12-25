@@ -1560,18 +1560,30 @@ class Manager(object):
         wind_info = weather['wind_direction']
         severity_info = weather['severity']
         day_info = weather['world_time']
+        warning = weather['warn_weather']
+
+        if warning == 1:
+            warning = 'Active'
+        else:
+            warning = 'None'
 
         weather_name = self.__locale.get_weather_name(weather_info)
         wind_berring = degrees_to_cardinal(wind_info)
-        severity_name = self.__locale.get_weather_severity(severity_info)
-        time_name = self.__locale.get_world_time(day_info)
+        severity_name = self.__locale.get_severity_name(severity_info)
+        time_name = self.__locale.get_time_name(day_info)
         weather_emoji = self.__locale.get_weather_emoji(weather_info)
 
         weather.update({
             "dist": get_dist_as_str(dist),
             'weather_info': weather_info,
             'weather_name': weather_name,
+            'cloud': self.__locale.get_display_name(weather['cloud_level']),
+            'rain': self.__locale.get_display_name(weather['rain_level']),
+            'wind': self.__locale.get_display_name(weather['wind_level']),
+            'snow': self.__locale.get_display_name(weather['snow_level']),
+            'fog': self.__locale.get_display_name(weather['fog_level']),
             'severity_name': severity_name,
+            'warning': warning,
             'time_name': time_name,
             'wind_berring': wind_berring,
             'weather_emoji': weather_emoji,
