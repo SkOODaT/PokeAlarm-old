@@ -386,6 +386,7 @@ class RocketMap:
             'gameplay_weather': check_for_none(int, data.get('gameplay_weather'), '?'),
             'new_gameplay_weather': int(data.get('gameplay_weather', data.get('gameplayweather'))),
             'severity': check_for_none(int, data.get('severity'), '?'),
+            'new_severity_weather': int(data.get('severity', data.get('severityweather'))),
             'warn_weather': check_for_none(int, data.get('warn_weather'), '?'),
             'world_time': check_for_none(int, data.get('world_time'), '?')
         }

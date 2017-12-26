@@ -85,11 +85,11 @@ class DiscordAlarm(Alarm):
             'title': "Center Of Weather Cell [<neighborhood>]",
             'url': "<gmaps>",
             'body': "Gameplay Weather: <weather_emoji> <weather_name>\nCloud " +
-                        "Level: <cloud_level>\nRain Level: <rain_level>\nWind " +
-                        "Level: <wind_level>\nSnow Level: <snow_level>\nFog " +
-                        "Level: <fog_level>\nWind Direction: <wind_direction>\n" +
-                        "Severity: <severity>\nWarning: <warn_weather>\n" +
-                        "World Time: <world_time>",
+                        "Level: <cloud>\nRain Level: <rain>\nWind " +
+                        "Level: <wind>\nSnow Level: <snow>\nFog " +
+                        "Level: <fog>\nWind Direction: <wind_dir>\n" +
+                        "Severity: <severity_name>\nWarning: <warning>\n" +
+                        "World Time: <time_name>",
             'color': "<weather_name>"
         }
     }

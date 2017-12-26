@@ -1498,28 +1498,29 @@ class Manager(object):
             thread.join()
 
     def process_weather(self, weather):
-        # Make sure that pokemon are enabled
+        # Make sure that weather is enabled
         if self.__weather_settings['enabled'] is False:
             log.debug("Weather ignored: weather notifications are disabled.")
             return
 
         weather_id = weather['id']
-
-        # Extract some basic information
         to_gameplay_weather = weather['new_gameplay_weather']
+        to_severity_weather = weather['new_severity_weather']
         from_gameplay_weather = self.__cache.get_weather_change(weather_id)
+        from_severity_weather = self.__cache.get_severity_change(weather_id)
 
         # Update weather's last known id
         self.__cache.update_weather_change(weather_id, to_gameplay_weather)
+        self.__cache.update_severity_change(weather_id, to_severity_weather)
 
         # Doesn't look like anything to me
-        if to_gameplay_weather == from_gameplay_weather:
+        if to_gameplay_weather == from_gameplay_weather or to_severity_weather == from_severity_weather:
             log.debug("Weather ignored: no change detected")
             return
 
         # Ignore first time updates
-        if from_gameplay_weather is '?':
-            log.debug("Weather update ignored: first time seeing this weather id")
+        if from_gameplay_weather is '?' or from_severity_weather is '?':
+            log.debug("Weather update ignored: first time seeing this weather id or severity")
             return
 
         # Extract some basic information
@@ -1556,37 +1557,35 @@ class Manager(object):
             log.info("Weather rejected: not within any specified geofence")
             return
 
-        weather_info = weather['gameplay_weather']
-        wind_info = weather['wind_direction']
-        severity_info = weather['severity']
-        day_info = weather['world_time']
-        warning = weather['warn_weather']
+        gameplay_weather = weather['gameplay_weather']
+        severity = weather['severity']
 
-        if warning == 1:
-            warning = 'Active'
+        weather_icon = None
+        weather_dynname = None
+        if weather['severity'] >= 1:
+            weather_icon = self.__locale.get_severity_name(severity)
+            weather_dynname = self.__locale.get_severity_name(severity) + ' Alert'
         else:
-            warning = 'None'
-
-        weather_name = self.__locale.get_weather_name(weather_info)
-        wind_berring = degrees_to_cardinal(wind_info)
-        severity_name = self.__locale.get_severity_name(severity_info)
-        time_name = self.__locale.get_time_name(day_info)
-        weather_emoji = self.__locale.get_weather_emoji(weather_info)
+            weather_icon = self.__locale.get_weather_name(gameplay_weather)
+            weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather),
+                                    self.__locale.get_weather_name(gameplay_weather))
 
         weather.update({
-            "dist": get_dist_as_str(dist),
-            'weather_info': weather_info,
-            'weather_name': weather_name,
+            'weather_name': self.__locale.get_weather_name(gameplay_weather),
+            'weather_dynname': weather_dynname,
+            'weather_icon': weather_icon,
             'cloud': self.__locale.get_display_name(weather['cloud_level']),
             'rain': self.__locale.get_display_name(weather['rain_level']),
             'wind': self.__locale.get_display_name(weather['wind_level']),
             'snow': self.__locale.get_display_name(weather['snow_level']),
             'fog': self.__locale.get_display_name(weather['fog_level']),
-            'severity_name': severity_name,
-            'warning': warning,
-            'time_name': time_name,
-            'wind_berring': wind_berring,
-            'weather_emoji': weather_emoji,
+            'severity_name': self.__locale.get_severity_name(severity),
+            'warning': 'Active' if weather['warn_weather'] == 1
+                                else 'None',
+            'time_name': self.__locale.get_time_name(weather['world_time']),
+            'wind_dir': degrees_to_cardinal(weather['wind_direction']),
+            'weather_emoji': self.__locale.get_weather_emoji(gameplay_weather),
+            "dist": get_dist_as_str(dist),
             'dir': get_cardinal_dir([lat, lng], self.__location),
         })
 
