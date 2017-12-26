@@ -29,6 +29,8 @@ class Cache(object):
         self._gym_info = {}
         self._egg_hist = {}
         self._raid_hist = {}
+        self._weather_hist = {}
+        self._alert_hist = {}
 
     def get_pokemon_expiration(self, pkmn_id):
         """ Get the datetime that the pokemon expires."""

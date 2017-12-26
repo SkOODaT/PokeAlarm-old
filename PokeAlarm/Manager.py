@@ -1514,13 +1514,13 @@ class Manager(object):
         self.__cache.update_severity_change(weather_id, to_severity_weather)
 
         # Doesn't look like anything to me
-        if to_gameplay_weather == from_gameplay_weather or to_severity_weather == from_severity_weather:
+        if to_gameplay_weather == from_gameplay_weather and to_severity_weather == from_severity_weather:
             log.debug("Weather ignored: no change detected")
             return
 
         # Ignore first time updates
         if from_gameplay_weather is '?' or from_severity_weather is '?':
-            log.debug("Weather update ignored: first time seeing this weather id or severity")
+            log.debug("Weather update ignored: first time seeing this weather id")
             return
 
         # Extract some basic information
@@ -1553,7 +1553,7 @@ class Manager(object):
 
         # Check the geofences
         weather['geofence'] = self.check_geofences('Weather', lat, lng)
-        if len(self.__geofences) > 0 and stop['geofence'] == 'unknown':
+        if len(self.__geofences) > 0 and weather['geofence'] == 'unknown':
             log.info("Weather rejected: not within any specified geofence")
             return
 
@@ -1562,13 +1562,13 @@ class Manager(object):
 
         weather_icon = None
         weather_dynname = None
-        if weather['severity'] >= 1:
+        if severity >= 1:
             weather_icon = self.__locale.get_severity_name(severity)
             weather_dynname = self.__locale.get_severity_name(severity) + ' Alert'
         else:
             weather_icon = self.__locale.get_weather_name(gameplay_weather)
-            weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather),
-                                    self.__locale.get_weather_name(gameplay_weather))
+            weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
+                                ' ' + self.__locale.get_weather_name(gameplay_weather))
 
         weather.update({
             'weather_name': self.__locale.get_weather_name(gameplay_weather),
