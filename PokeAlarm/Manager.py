@@ -1572,7 +1572,7 @@ class Manager(object):
                                     ' ' + self.__locale.get_weather_name(gameplay_weather))
             else:
                 weather_icon = self.__locale.get_weather_name(gameplay_weather + 10)
-                weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
+                weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather + 10) +
                                     ' ' + self.__locale.get_weather_name(gameplay_weather))
 
         else:
