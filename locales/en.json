@@ -7,7 +7,9 @@
     "4": "Cloudy",
     "5": "Windy",
     "6": "Snow",
-    "7": "Fog"
+    "7": "Fog",
+    "11": "Clearnight",
+    "13": "PartlyCloudynight"
   },
   "severity_names": {
     "0": "None",

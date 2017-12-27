@@ -1559,12 +1559,22 @@ class Manager(object):
 
         gameplay_weather = weather['gameplay_weather']
         severity = weather['severity']
-
+        time = weather['world_time']
         weather_icon = None
         weather_dynname = None
         if severity >= 1:
             weather_icon = self.__locale.get_severity_name(severity)
             weather_dynname = self.__locale.get_severity_name(severity) + ' Alert'
+        elif time == 2:
+            if not gameplay_weather == 1 and gameplay_weather == 3:
+                weather_icon = self.__locale.get_weather_name(gameplay_weather)
+                weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
+                                    ' ' + self.__locale.get_weather_name(gameplay_weather))
+            else:
+                weather_icon = self.__locale.get_weather_name(gameplay_weather + 10)
+                weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
+                                    ' ' + self.__locale.get_weather_name(gameplay_weather))
+
         else:
             weather_icon = self.__locale.get_weather_name(gameplay_weather)
             weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
@@ -1582,7 +1592,7 @@ class Manager(object):
             'severity_name': self.__locale.get_severity_name(severity),
             'warning': 'Active' if weather['warn_weather'] == 1
                                 else 'None',
-            'time_name': self.__locale.get_time_name(weather['world_time']),
+            'time_name': self.__locale.get_time_name(time),
             'wind_dir': degrees_to_cardinal(weather['wind_direction']),
             'weather_emoji': self.__locale.get_weather_emoji(gameplay_weather),
             "dist": get_dist_as_str(dist),
