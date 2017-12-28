@@ -109,7 +109,8 @@ class RocketMap:
             'rating_attack': data.get('rating_attack'),
             'rating_defense': data.get('rating_defense'),
             'previous_id': check_for_none(int, data.get('previous_id'), ''),
-            'weather_id': check_for_none(int, data.get('weather_id'), '')
+            'weather_id': check_for_none(int, data.get('weather_id'), ''),
+            'time_id': check_for_none(int, data.get('time_id'), '')
         }
         if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
             pkmn['iv'] = float(((pkmn['atk'] + pkmn['def'] + pkmn['sta'])
