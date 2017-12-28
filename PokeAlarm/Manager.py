@@ -1566,7 +1566,7 @@ class Manager(object):
             weather_icon = self.__locale.get_severity_name(severity)
             weather_dynname = self.__locale.get_severity_name(severity) + ' Alert'
         elif time == 2:
-            if not gameplay_weather == 1 and gameplay_weather == 3:
+            if not gameplay_weather == 1 and not gameplay_weather == 3:
                 weather_icon = self.__locale.get_weather_name(gameplay_weather)
                 weather_dynname = (self.__locale.get_weather_emoji(gameplay_weather) +
                                     ' ' + self.__locale.get_weather_name(gameplay_weather))
