@@ -1575,9 +1575,19 @@ class Manager(object):
         weather_icon = None
         weather_dynname = None
         weather_dynemoji = None
+        # Dynamic Icons And Names
+        # Severity Alert
         if severity >= 1:
             weather_icon = self.__locale.get_severity_name(severity)
             weather_dynname = self.__locale.get_severity_name(severity) + ' Alert'
+            if time == 2:
+                if not gameplay_weather == 1 and not gameplay_weather == 3:
+                    weather_dynemoji = self.__locale.get_weather_emoji(gameplay_weather)
+                else:
+                    weather_dynemoji = self.__locale.get_weather_emoji(gameplay_weather + 10)
+            else:
+                weather_dynemoji = self.__locale.get_weather_emoji(gameplay_weather)
+        # Regular Alert
         elif time == 2:
             if not gameplay_weather == 1 and not gameplay_weather == 3:
                 weather_icon = self.__locale.get_weather_name(gameplay_weather)
