@@ -29,6 +29,16 @@ from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path,\
 # Local Imports
 from . import config
 
+
+from pgoapi.protos.pogoprotos.enums.costume_pb2 import Costume
+from pgoapi.protos.pogoprotos.enums.form_pb2 import Form
+from pgoapi.protos.pogoprotos.enums.gender_pb2 import MALE, FEMALE, Gender, GENDERLESS, GENDER_UNSET
+from pgoapi.protos.pogoprotos.enums.weather_condition_pb2 import *
+
+from pgoapi.protos.pogoprotos.map.weather.gameplay_weather_pb2 import *
+from pgoapi.protos.pogoprotos.map.weather.weather_alert_pb2 import *
+from pgoapi.protos.pogoprotos.networking.responses.get_map_objects_response_pb2 import *
+
 log = logging.getLogger('Manager')
 
 
@@ -837,6 +847,7 @@ class Manager(object):
         # Finally, add in all the extra crap we waited to calculate until now
         time_str = get_time_as_str(pkmn['disappear_time'], self.__timezone)
         iv = pkmn['iv']
+        gendername = pkmn['gendername']
         form_id = pkmn['form_id']
         form = self.__locale.get_form_name(pkmn_id, form_id)
         weather_id = pkmn['weather_id']
@@ -845,6 +856,28 @@ class Manager(object):
         time_id = pkmn['time_id']
         weather_dynemoji = None
 
+        # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
+        # Pokemon, Gender, Time
+        pkm_icon = ('pkm_' +
+                    '{:03}'.format(pkmn_id) +
+                    '_' + Gender.Name(gendername) +
+                    '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
+                    )
+        # costume
+        # ToDo
+        # form
+        # ToDo
+        # Weather
+        if weather_id:
+            pkm_icon =  ('pkm_' +
+                        '{:03}'.format(pkmn_id) +
+                        '_' + Gender.Name(gendername) +
+                        '_' + WeatherCondition.Name(weather_id) +
+                        '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
+                        )
+        log.warning('FETCHING GENERATED ICON: %s', pkm_icon)
+
+        # Dynamic Weather Text
         if time_id == 2:
             if not weather_id == 1 and not weather_id == 3:
                 weather_dynemoji = self.__locale.get_weather_emoji(weather_id)
@@ -878,7 +911,8 @@ class Manager(object):
             'weather_id': weather_id,
             'weather_name': weather_name,
             'weather_emoji': weather_emoji,
-            'weather_dynemoji': weather_dynemoji
+            'weather_dynemoji': weather_dynemoji,
+            'pkm_icon': pkm_icon
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -1135,11 +1169,11 @@ class Manager(object):
             log.debug("Gym ignored: notifications are disabled.")
             return
 
-        if gym_info['is_in_battle'] == "True":
+        if gym_info['is_in_battle'] == 1:
             log.info("%s Gym under attack!", gym_info['is_in_battle'])
 
         # Doesn't look like anything to me
-        if to_team_id == from_team_id and gym_info['is_in_battle'] == "False":
+        if to_team_id == from_team_id and gym_info['is_in_battle'] == 0:
             log.info("Gym ignored: no change detected")
             return
 
@@ -1210,12 +1244,24 @@ class Manager(object):
             log.debug("Gym inside geofences was not checked because "
                       + " no geofences were set.")
 
-        if gym_info['is_in_battle'] == 'True':
-            gym_info['is_in_battle'] = '[' + cur_team+ ']' + ' **Gym In Battle!**'
-            teamStr = ''
+        # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
+        # Team, Level, Battle
+        if gym_info['slots_available'] > 0:
+            gymlevel = '{}'.format(6 - gym_info['slots_available'])
         else:
-            gym_info['is_in_battle'] = ''
-            teamStr = '[' + old_team + '] Gym Changed To [' + cur_team + ']'
+            gymlevel = '6'
+        icnlevel = '_L{}'.format(6 - gym_info['slots_available'])
+        icnbattle = '_Battle' if gym_info['is_in_battle'] == 1 else ''
+        gym_icon = (cur_team +
+                    icnlevel +
+                    icnbattle)
+        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+
+        # Gym Is_In_Battle
+        if gym_info['is_in_battle'] == 1:
+            battleStr = '**[' + cur_team + '] ' + 'Gym In Battle!**'
+        else:
+            battleStr = '[**' + old_team + '**] Gym Changed To [**' + cur_team + '**]'
 
         gym_detail = self.__cache.get_gym_info(gym_id)
 
@@ -1233,8 +1279,9 @@ class Manager(object):
             'old_team_leader': self.__locale.get_leader_name(from_team_id),
             'defenders': gym_info['defenders'],
             'points': gym_info['points'],
-            'is_in_battle': gym_info['is_in_battle'],
-            'teamStr': teamStr,
+            'gymlevel': gymlevel,
+            'gym_icon': gym_icon,
+            'battleStr': battleStr,
             'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pkmn_id)
         })
 
@@ -1333,6 +1380,20 @@ class Manager(object):
         team_id = egg.get('team_id') or self.__cache.get_gym_team(gym_id)
         gym_detail = self.__cache.get_gym_info(gym_id)
 
+        # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
+        # Team, Level, RaidLevel
+        if egg['slots_available'] > 0:
+            gymlevel = '{}'.format(6 - egg['slots_available'])
+        else:
+            gymlevel = '6'
+        icnlevel = '_L{}'.format(6 - egg['slots_available'])
+        icnraidlevel = '_R{}'.format(egg['raid_level'])
+        #icnbattle = '_Battle' if gym_info['is_in_battle'] == 1 else ''
+        gym_icon = (self.__locale.get_team_name(team_id) +
+                    icnlevel +
+                    icnraidlevel)
+        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+
         egg.update({
             "gym_name": gym_detail['name'],
             "gym_description": gym_detail['description'],
@@ -1347,7 +1408,9 @@ class Manager(object):
             'dir': get_cardinal_dir([lat, lng], self.__location),
             'team_id': team_id,
             'team_name': self.__locale.get_team_name(team_id),
-            'team_leader': self.__locale.get_leader_name(team_id)
+            'team_leader': self.__locale.get_leader_name(team_id),
+            'gymlevel': gymlevel,
+            'gym_icon': gym_icon
         })
 
         threads = []
@@ -1472,6 +1535,22 @@ class Manager(object):
         form = self.__locale.get_form_name(pkmn_id, form_id)
         min_cp, max_cp = get_pokemon_cp_range(pkmn_id, 20)
 
+        # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
+        # Team, Level, RaidLevel, RaidPokemon
+        if raid['slots_available'] > 0:
+            gymlevel = '{}'.format(6 - raid['slots_available'])
+        else:
+            gymlevel = '6'
+        icnlevel = '_L{}'.format(6 - raid['slots_available'])
+        icnraidlevel = '_R{}'.format(raid['raid_level'])
+        icnpkmnid = '_P{}'.format(raid['pkmn_id'])
+        #icnbattle = '_Battle' if gym_info['is_in_battle'] == 1 else ''
+        gym_icon = (self.__locale.get_team_name(team_id) +
+                    icnlevel +
+                    icnraidlevel +
+                    icnpkmnid)
+        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+
         raid.update({
             'pkmn': name,
             'pkmn_id_3': '{:03}'.format(pkmn_id),
@@ -1496,7 +1575,9 @@ class Manager(object):
             'team_name': self.__locale.get_team_name(team_id),
             'team_leader': self.__locale.get_leader_name(team_id),
             'min_cp': min_cp,
-            'max_cp': max_cp
+            'max_cp': max_cp,
+            'gymlevel': gymlevel,
+            'gym_icon': gym_icon
         })
 
         threads = []

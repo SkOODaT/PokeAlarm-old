@@ -10,6 +10,15 @@ from PokeAlarm.Utils import get_gmaps_link, get_move_damage, get_move_dps, \
     get_move_duration, get_move_energy, get_pokemon_gender, get_pokemon_size, \
     get_pokemon_size_full, get_pkmn_name, get_unown_name, get_applemaps_link
 
+from pgoapi.protos.pogoprotos.enums.costume_pb2 import Costume
+from pgoapi.protos.pogoprotos.enums.form_pb2 import Form
+from pgoapi.protos.pogoprotos.enums.gender_pb2 import MALE, FEMALE, Gender, GENDERLESS, GENDER_UNSET
+from pgoapi.protos.pogoprotos.enums.weather_condition_pb2 import *
+
+from pgoapi.protos.pogoprotos.map.weather.gameplay_weather_pb2 import *
+from pgoapi.protos.pogoprotos.map.weather.weather_alert_pb2 import *
+from pgoapi.protos.pogoprotos.networking.responses.get_map_objects_response_pb2 import *
+
 log = logging.getLogger('WebhookStructs')
 
 
@@ -96,6 +105,7 @@ class RocketMap:
             'height': check_for_none(float, data.get('height'), '?'),
             'weight': check_for_none(float, data.get('weight'), '?'),
             'gender': get_pokemon_gender(check_for_none(int, data.get('gender'), '?')),
+            'gendername': check_for_none(int, data.get('gender'), '?'),
             'catch_prob_1': check_for_none(float, data.get('catch_prob_1'), '?'),
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), '?'),
             'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), '?'),
@@ -222,7 +232,7 @@ class RocketMap:
             'points': str(data.get('total_cp')),
             'guard_pkmn_id': check_for_none(int, data.get('guard_pokemon_id'), '?'),
             'slots_available': check_for_none(int, data.get('slots_available'), '?'),
-            'is_in_battle': check_for_none(str, data.get('is_in_battle'), '?'),
+            'is_in_battle': check_for_none(int, data.get('is_in_battle'), 0),
             'defenders': defenders,
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
@@ -342,6 +352,7 @@ class RocketMap:
             'id': id_,
             'team_id': team_id,
             #'team_id': int(data.get('team_id',  data.get('team'))),
+            'slots_available': check_for_none(int, data.get('slots_available'), '?'),
             'pkmn_id': check_for_none(int, data.get('pokemon_id'), 0),
             'cp': check_for_none(int, data.get('cp'), '?'),
             'quick_id': quick_id,
