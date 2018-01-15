@@ -875,7 +875,7 @@ class Manager(object):
                         '_' + WeatherCondition.Name(weather_id) +
                         '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
                         )
-        log.warning('FETCHING GENERATED ICON: %s', pkm_icon)
+        log.debug('FETCHING GENERATED ICON: %s', pkm_icon)
 
         # Dynamic Weather Text
         if time_id == 2:
@@ -1255,7 +1255,7 @@ class Manager(object):
         gym_icon = (cur_team +
                     icnlevel +
                     icnbattle)
-        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+        log.debug('FETCHING GENERATED ICON: %s', gym_icon)
 
         # Gym Is_In_Battle
         if gym_info['is_in_battle'] == 1:
@@ -1392,7 +1392,7 @@ class Manager(object):
         gym_icon = (self.__locale.get_team_name(team_id) +
                     icnlevel +
                     icnraidlevel)
-        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+        log.debug('FETCHING GENERATED ICON: %s', gym_icon)
 
         egg.update({
             "gym_name": gym_detail['name'],
@@ -1549,7 +1549,7 @@ class Manager(object):
                     icnlevel +
                     icnraidlevel +
                     icnpkmnid)
-        log.warning('FETCHING GENERATED ICON: %s', gym_icon)
+        log.debug('FETCHING GENERATED ICON: %s', gym_icon)
 
         raid.update({
             'pkmn': name,
