@@ -174,7 +174,7 @@ class DiscordAlarm(Alarm):
         payload = {
             # Usernames are limited to 32 characters
             'username': replace(alert['username'], info)[:32],
-            'content': replace(alert['content'], info),
+            'content': (replace(alert['content'], info) + ' ' + str(info['mention'])),
             'avatar_url': replace(alert['avatar_url'], info),
         }
         if alert['disable_embed'] is False:

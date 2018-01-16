@@ -508,6 +508,7 @@ class Manager(object):
         charge_id = pkmn['charge_id']
         rating_attack = pkmn['rating_attack']
         rating_defense = pkmn['rating_defense']
+        mention = pkmn['mention']
 
         for filt_ct in range(len(filters)):
             filt = filters[filt_ct]
@@ -752,12 +753,14 @@ class Manager(object):
                 log.debug(
                     "Pokemon defense rating was not checked because it was missing.")
 
+            mention = filt.check_mention()
+
             # Nothing left to check, so it must have passed
             passed = True
             log.debug("{} passed filter #{}".format(name, filt_ct))
             break
 
-        return passed
+        return passed, mention
 
     # Check if an egg filter will pass for given egg
     def check_egg_filter(self, settings, egg):
@@ -830,7 +833,7 @@ class Manager(object):
         pkmn['pkmn'] = name
 
         filters = self.__pokemon_settings['filters'][pkmn_id]
-        passed = self.check_pokemon_filter(filters, pkmn, dist)
+        passed, mention = self.check_pokemon_filter(filters, pkmn, dist)
         # If we didn't pass any filters
         if not passed:
             return
@@ -912,7 +915,8 @@ class Manager(object):
             'weather_name': weather_name,
             'weather_emoji': weather_emoji,
             'weather_dynemoji': weather_dynemoji,
-            'pkm_icon': pkm_icon
+            'pkm_icon': pkm_icon,
+            'mention': mention
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -995,6 +999,7 @@ class Manager(object):
             '12h_time': time_str[1],
             '24h_time': time_str[2],
             'dir': get_cardinal_dir([lat, lng], self.__location),
+            'mention': '' 
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -1126,7 +1131,8 @@ class Manager(object):
             'old_team_id': from_team_id,
             'new_team_leader': self.__locale.get_leader_name(to_team_id),
             'old_team_leader': self.__locale.get_leader_name(from_team_id),
-            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pokemon_id)
+            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pokemon_id),
+            'mention': ''
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -1282,7 +1288,8 @@ class Manager(object):
             'gymlevel': gymlevel,
             'gym_icon': gym_icon,
             'battleStr': battleStr,
-            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pkmn_id)
+            'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pkmn_id),
+            'mention': ''
         })
 
         if self.__loc_service:
@@ -1410,7 +1417,8 @@ class Manager(object):
             'team_name': self.__locale.get_team_name(team_id),
             'team_leader': self.__locale.get_leader_name(team_id),
             'gymlevel': gymlevel,
-            'gym_icon': gym_icon
+            'gym_icon': gym_icon,
+            'mention': ''
         })
 
         threads = []
@@ -1506,11 +1514,12 @@ class Manager(object):
             'quick_id': quick_id,
             'charge_id': charge_id,
             'rating_attack': 'A',
-            'rating_defense': 'A'
+            'rating_defense': 'A',
+            'mention': None
         }
 
         filters = self.__raid_settings['filters'][pkmn_id]
-        passed = self.check_pokemon_filter(filters, raid_pkmn, dist)
+        passed, mention = self.check_pokemon_filter(filters, raid_pkmn, dist)
         # If we didn't pass any filters
         if not passed:
             log.debug("Raid {} did not pass pokemon check".format(gym_id))
@@ -1577,7 +1586,8 @@ class Manager(object):
             'min_cp': min_cp,
             'max_cp': max_cp,
             'gymlevel': gymlevel,
-            'gym_icon': gym_icon
+            'gym_icon': gym_icon,
+            'mention': mention
         })
 
         threads = []
@@ -1704,6 +1714,7 @@ class Manager(object):
             'weather_dynemoji': weather_dynemoji,
             "dist": get_dist_as_str(dist),
             'dir': get_cardinal_dir([lat, lng], self.__location),
+            'mention': ''
         })
 
         if self.__loc_service:
