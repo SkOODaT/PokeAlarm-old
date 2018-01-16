@@ -323,6 +323,7 @@ class PokemonFilter(Filter):
         self.min_rating_defense = (settings.pop('min_rating_defense', None) or default['min_rating_defense']).upper()
         self.max_rating_defense = (settings.pop('max_rating_defense', None) or default['max_rating_defense']).upper()
         self.needs_rating_defense = self.min_rating_defense != pDefaults['min_rating_defense'] or self.max_rating_defense != pDefaults['max_rating_defense']
+        self.mention = str(settings.pop('mention', None) or default['mention'])
 
         reject_leftover_parameters(
             settings, "pokemon filter under '{}'".format(location))
@@ -396,6 +397,14 @@ class PokemonFilter(Filter):
     def check_rating_defense(self, rating_defense):
         return self.min_rating_defense >= rating_defense >= self.max_rating_defense
 
+    # Checks for an @mention
+    def check_mention(self):
+        if self.mention == "None":
+            self.mention=""
+        if self.mention == None:
+            self.mention=""
+        return self.mention
+
     # Convert this filter to a dict
     def to_dict(self):
         rtn = super(PokemonFilter, self).to_dict()
@@ -414,6 +423,7 @@ class PokemonFilter(Filter):
             "form": self.forms,
             "min_rating_attack": self.min_rating_attack, "max_rating_attack": self.max_rating_attack,
             "min_rating_defense": self.min_rating_defense, "max_rating_defense": self.max_rating_defense,
+            "mention": self.mention,
             "ignore_missing": self.ignore_missing
         })
         return rtn
@@ -453,6 +463,8 @@ class PokemonFilter(Filter):
             parts.append("Rating Atk: {} to {}".format(self.min_rating_attack, self.max_rating_attack))
         if self.min_rating_defense != defaults['min_rating_defense'] or self.max_rating_defense != defaults['max_rating_defense']:
             parts.append("Rating Def: {} to {}".format(self.min_rating_defense, self.max_rating_defense))
+        if self.mention is not None:
+            parts.append("Mention: {}".format(self.mention))
         if self.ignore_missing != defaults["ignore_missing"]:
             parts.append("Ignore Missing: {}".format(self.ignore_missing))
         if not parts:
@@ -475,7 +487,8 @@ class PokemonFilter(Filter):
             "gender": None,
             "form": None,
             "min_rating_attack": "F", "max_rating_attack": "A",
-            "min_rating_defense": "F", "max_rating_defense": "A"
+            "min_rating_defense": "F", "max_rating_defense": "A",
+            "mention": None
         })
         return rtn
 
