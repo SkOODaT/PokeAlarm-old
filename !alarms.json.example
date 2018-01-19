@@ -41,7 +41,7 @@
       "avatar_url": "http://sprites/gym_<new_team>.png",
   		"title":"[<neighborhood>] <address> (<postal>)",
   		"url":"<gmaps>",
-  		"body": "<is_in_battle><teamStr>\n[<gym_name> (<gym_description>)]\n[Gym CP:<points>] [<slots_available> Slots Open]\n[Defender: <guard_pkmn_id>]\n<defenders>[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"body": "<is_in_battle><teamStr>\n[<gym_name> (<gym_description>)]\n[Gym CP:<points>] [<slots_available> Slots Open]\n[Defender: <guard_pkmn_id>]\n<defenders>[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]\n<park>",
   		"map": {
   			"enabled":"true",
   			"width":"250",
@@ -56,7 +56,7 @@
       "avatar_url": "http://sprites/egg_<raid_level>.png",
   		"title":"[<neighborhood>] <address> (<postal>)",
   		"url":"<gmaps>",
-  		"body": "[<begin_12h_time> (<begin_time_left>)]\n[Lv: <raid_level> Egg]\n[<team_name> Gym] [<slots_available> Slots Open]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"body": "[<begin_12h_time> (<begin_time_left>)]\n[Lv: <raid_level> Egg]\n[<team_name> Gym] [<slots_available> Slots Open]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]\n<park>",
   		"map": {
   			"enabled":"true",
   			"width":"250",
@@ -71,7 +71,7 @@
       "avatar_url": "http://sprites/<pkmn_id>.png",
   		"title":"[<neighborhood>] <address> (<postal>)",
   		"url":"<gmaps>",
-  		"body": "[<12h_time> (<time_left> left)]\n[Lv: <raid_level>] [CP: <cp>]\n[<quick_move>] [<charge_move>]\n[<team_name> Gym]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]",
+  		"body": "[<12h_time> (<time_left> left)]\n[Lv: <raid_level>] [CP: <cp>]\n[<quick_move>] [<charge_move>]\n[<team_name> Gym]\n[<gym_name> (<gym_description>)]\n[<dist> [<dir>] Walking Distance: <walk_dist> (<walk_time>)]\n<park>",
   		"map": {
   			"enabled":"true",
   			"width":"250",

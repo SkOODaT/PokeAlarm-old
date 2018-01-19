@@ -168,7 +168,8 @@ def load_gym_section(settings):
             settings.pop('ignore_neutral', None)) or False),
         "filters": create_multi_filter(
             'Gym --> filters', GymFilter,
-            settings.pop('filters', "False"), default)
+            settings.pop('filters', "False"), default),
+        "park_check": bool(parse_boolean(settings.pop('park_check', None)) or False)
     }
 
     reject_leftover_parameters(settings, 'Gym section of Filters file.')
@@ -189,7 +190,8 @@ def load_egg_section(settings):
         "max_level": int(settings.pop('max_level', 10) or 10),
         "min_dist": float(settings.pop('min_dist', 0) or 0),
         "max_dist": float(settings.pop('max_dist', 'inf') or 'inf'),
-        "contains": settings.pop('gymname_contains', [])
+        "contains": settings.pop('gymname_contains', []),
+        "park_check": bool(parse_boolean(settings.pop('park_check', None)) or False)
     }
 
     if not isinstance(egg['contains'], list):
@@ -207,7 +209,8 @@ def load_raid_section(settings):
     log.info("Setting up Raid Filters...")
     raid = {
         "enabled": bool(parse_boolean(settings.pop('enabled', None)) or False),
-        "contains": settings.pop('gymname_contains', [])
+        "contains": settings.pop('gymname_contains', []),
+        "park_check": bool(parse_boolean(settings.pop('park_check', None)) or False)
     }
 
     if not isinstance(raid['contains'], list):
