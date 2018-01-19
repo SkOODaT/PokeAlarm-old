@@ -2,6 +2,7 @@
     "gyms":{
         "enabled":"False",
         "ignore_neutral":"False",
+        "park_check":"True",
         "filters":[
             {
                 "from_team":["Valor", "Instinct", "Mystic"], "to_team":["Valor", "Instinct", "Mystic"],
@@ -432,12 +433,14 @@
     },
     "eggs":{
         "enabled":"True",
+        "park_check":"True",
         "gymname_contains":["sprint","level badge","phone skin","starbucks"],
         "min_level": "1",
         "max_level": "5"
     },
     "raids":{
         "enabled":"True",
+        "park_check":"True",
         "gymname_contains":["sprint","level badge","phone skin","starbucks"],
         "default": {
             "mention": "None",

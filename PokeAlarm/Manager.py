@@ -999,7 +999,7 @@ class Manager(object):
             '12h_time': time_str[1],
             '24h_time': time_str[2],
             'dir': get_cardinal_dir([lat, lng], self.__location),
-            'mention': '' 
+            'mention': ''
         })
         if self.__loc_service:
             self.__loc_service.add_optional_arguments(
@@ -1119,6 +1119,12 @@ class Manager(object):
 
         gym_detail = self.__cache.get_gym_info(gym_id)
 
+        #Get park if needed
+        if self.__gym_settings['park_check'] is True and gym_info['park'] != 0:
+            park = "***This Gym Is A Possible EX Raid Location***"
+        else:
+            park = ''
+
         gym.update({
             "gym_name": gym_detail['name'],
             "gym_description": gym_detail['description'],
@@ -1132,6 +1138,7 @@ class Manager(object):
             'new_team_leader': self.__locale.get_leader_name(to_team_id),
             'old_team_leader': self.__locale.get_leader_name(from_team_id),
             'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pokemon_id),
+            'park':park,
             'mention': ''
         })
         if self.__loc_service:
@@ -1250,6 +1257,12 @@ class Manager(object):
             log.debug("Gym inside geofences was not checked because "
                       + " no geofences were set.")
 
+        #Get park if needed
+        if self.__gym_settings['park_check'] is True and gym_info['park'] != 0:
+            park = "***This Gym Is A Possible EX Raid Location***"
+        else:
+            park = ''
+
         # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
         # Team, Level, Battle
         if gym_info['slots_available'] > 0:
@@ -1289,6 +1302,7 @@ class Manager(object):
             'gym_icon': gym_icon,
             'battleStr': battleStr,
             'guard_pkmn_id': self.__locale.get_pokemon_name(guard_pkmn_id),
+            'park':park,
             'mention': ''
         })
 
@@ -1387,6 +1401,12 @@ class Manager(object):
         team_id = egg.get('team_id') or self.__cache.get_gym_team(gym_id)
         gym_detail = self.__cache.get_gym_info(gym_id)
 
+        #Get park if needed
+        if self.__egg_settings['park_check'] is True and egg['park'] != 0:
+            park = "***This Gym Is A Possible EX Raid Location***"
+        else:
+            park = ''
+
         # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
         # Team, Level, RaidLevel
         if egg['slots_available'] > 0:
@@ -1418,6 +1438,7 @@ class Manager(object):
             'team_leader': self.__locale.get_leader_name(team_id),
             'gymlevel': gymlevel,
             'gym_icon': gym_icon,
+            'park':park,
             'mention': ''
         })
 
@@ -1544,6 +1565,12 @@ class Manager(object):
         form = self.__locale.get_form_name(pkmn_id, form_id)
         min_cp, max_cp = get_pokemon_cp_range(pkmn_id, 20)
 
+        #Get park if needed
+        if self.__raid_settings['park_check'] is True and raid['park'] != 0:
+            park = "***This Gym Is A Possible EX Raid Location***"
+        else:
+            park = ''
+
         # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
         # Team, Level, RaidLevel, RaidPokemon
         if raid['slots_available'] > 0:
@@ -1587,6 +1614,7 @@ class Manager(object):
             'max_cp': max_cp,
             'gymlevel': gymlevel,
             'gym_icon': gym_icon,
+            'park':park,
             'mention': mention
         })
 

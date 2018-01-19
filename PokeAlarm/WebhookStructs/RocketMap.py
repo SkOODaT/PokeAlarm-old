@@ -209,7 +209,8 @@ class RocketMap:
             'name': check_for_none(str, data.get('name'), 'unknown').strip(),
             'description': check_for_none(
                 str, data.get('description'), 'unknown').strip(),
-            'url': check_for_none(str, data.get('url'), 'unknown')
+            'url': check_for_none(str, data.get('url'), 'unknown'),
+            'park': check_for_none(int, data.get('park'), 0)
         }
         gym['gmaps'] = get_gmaps_link(gym['lat'], gym['lng'])
         gym['applemaps'] = get_applemaps_link(gym['lat'], gym['lng'])
@@ -241,7 +242,8 @@ class RocketMap:
             'lng_5': "{:.5f}".format(float(data['longitude'])),
             'name': check_for_none(str, data.get('name'), '?').strip(),
             'description': check_for_none(str, data.get('description'), '?').strip(),
-            'url': check_for_none(str, data.get('url'), '')
+            'url': check_for_none(str, data.get('url'), ''),
+            'park': check_for_none(int, data.get('park'), 0)
         }
 
         #log.warning(gym_info['guard_pkmn_id'])
@@ -309,7 +311,8 @@ class RocketMap:
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
-            'lng_5': "{:.5f}".format(float(data['longitude']))
+            'lng_5': "{:.5f}".format(float(data['longitude'])),
+            'park': check_for_none(int, data.get('park'), 0)
         }
 
         egg['gmaps'] = get_gmaps_link(egg['lat'], egg['lng'])
@@ -372,7 +375,8 @@ class RocketMap:
             'lat': float(data['latitude']),
             'lng': float(data['longitude']),
             'lat_5': "{:.5f}".format(float(data['latitude'])),
-            'lng_5': "{:.5f}".format(float(data['longitude']))
+            'lng_5': "{:.5f}".format(float(data['longitude'])),
+            'park': check_for_none(int, data.get('park'), 0)
         }
 
         raid['gmaps'] = get_gmaps_link(raid['lat'], raid['lng'])
