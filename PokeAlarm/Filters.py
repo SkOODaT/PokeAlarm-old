@@ -557,23 +557,23 @@ class PokemonFilter(Filter):
         if genders is None:  # no genders
             return None
         list_ = set()
-        valid_genders = ['male', 'female', 'neutral']
+        valid_genders = ['M', 'F', 'N']
         for raw_gender in genders:
             log.debug("raw_gender: {}".format(raw_gender))
             gender = raw_gender
             if raw_gender == u'\u2642':
-                gender = 'male'
+                gender = 'M'
             if raw_gender == u'\u2640':
-                gender = 'female'
+                gender = 'F'
             if raw_gender == u'\u26b2':
-                gender = 'neutral'
+                gender = 'N'
             log.debug("gender: {}".format(gender))
             if gender in valid_genders:
-                if gender == 'male':
+                if gender == 'M':
                     list_.add(u'\u2642')
-                if gender == 'female':
+                if gender == 'F':
                     list_.add(u'\u2640')
-                if gender == 'neutral':
+                if gender == 'N':
                     list_.add(u'\u26b2')
             else:
                 log.error("{} is not a valid gender name.".format(gender))

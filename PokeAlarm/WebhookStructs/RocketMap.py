@@ -130,23 +130,22 @@ class RocketMap:
             pkmn['atk'], pkmn['def'], pkmn['sta'] = '?', '?', '?'
 
         if pkmn['height'] != '?' or pkmn['weight'] != '?':
-            pkmn['size'] = get_pokemon_size(
-                pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
+            pkmn['size'] = get_pokemon_size(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
+            pkmn['size_full'] = get_pokemon_size_full(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
             pkmn['height'] = "{:.2f}".format(pkmn['height'])
             pkmn['weight'] = "{:.2f}".format(pkmn['weight'])
-            #pkmn['size_full'] = get_pokemon_size_full(pkmn['pkmn_id'], pkmn['height'], pkmn['weight'])
 
-        #if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'T':
+        if pkmn['pkmn_id'] == 19 and pkmn['size'] == 'T':
+            pkmn['tiny_rat'] = 'Tiny'
+
+        if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'B':
+            pkmn['big_karp'] = 'Big'
+
+        #if pkmn['pkmn_id'] == 19 and pkmn['weight'] <= 2.41:
         #    pkmn['tiny_rat'] = 'Tiny'
 
-        #if pkmn['pkmn_id'] == 129 and pkmn['size'] == 'B':
+        #if pkmn['pkmn_id'] == 129 and pkmn['weight'] >= 13.13:
         #    pkmn['big_karp'] = 'Big'
-
-        if pkmn['pkmn_id'] == 19 and pkmn['weight'] <= 2.41:
-            pkmn['tiny_rat'] = 'tiny'
-
-        if pkmn['pkmn_id'] == 129 and pkmn['weight'] >= 13.13:
-            pkmn['big_karp'] = 'big'
 
         rating_attack = pkmn['rating_attack']
         pkmn['rating_attack'] = rating_attack.upper() if rating_attack else '-'
