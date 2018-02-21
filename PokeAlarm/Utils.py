@@ -355,6 +355,8 @@ def get_color(color_id):
                 color_ = 0xff66ff
             elif color_id == "Pikachu":
                 color_ = 0xF6F006
+            elif color_id == "Raichu":
+                color_ = 0xF6F006
             elif color_id == "Moderate Alert":
                 color_ = 0xF6F006
             elif color_id == "Extreme Alert":
