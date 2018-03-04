@@ -860,25 +860,24 @@ class Manager(object):
         weather_dynemoji = None
 
         # Dynamic Icon (Need Sloppys/SkOODaTs RMap)
-        # Pokemon, Gender, Time
+        gendericon = ''
+        if gendername:
+            gendericon = '_' + Gender.Name(gendername)
+        formicon = ''
+        if pkmn_id == 201 or pkmn_id == 351:
+            formicon = '_' + Form.Name(form_id)
+        # costume
+        weathericon = ''
+        if weather_id:
+            weathericon = '_' + WeatherCondition.Name(weather_id)
         pkm_icon = ('pkm_' +
                     '{:03}'.format(pkmn_id) +
-                    '_' + Gender.Name(gendername) +
+                    gendericon +
+                    formicon +
+                    weathericon +
                     '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
                     )
-        # costume
-        # ToDo
-        # form
-        # ToDo
-        # Weather
-        if weather_id:
-            pkm_icon =  ('pkm_' +
-                        '{:03}'.format(pkmn_id) +
-                        '_' + Gender.Name(gendername) +
-                        '_' + WeatherCondition.Name(weather_id) +
-                        '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
-                        )
-        log.debug('FETCHING GENERATED ICON: %s', pkm_icon)
+        log.warning('FETCHING GENERATED ICON: %s', pkm_icon)
 
         # Dynamic Weather Text
         if time_id == 2:

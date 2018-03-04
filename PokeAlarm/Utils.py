@@ -98,7 +98,7 @@ def get_unown_name(form_id):
     for file_ in files:
         with open(file_, 'r') as f:
             j = json.loads(f.read())
-            j = j['forms']['201']
+            j = j['forms']
             for pb in j:
                 # log.warning('ID %s AND pokemon_id %s', pb, pokemon_id)
                 if int(pb) == match:
