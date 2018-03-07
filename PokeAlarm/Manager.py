@@ -25,7 +25,7 @@ from Locale import Locale
 from LocationServices import location_service_factory
 from Utils import get_cardinal_dir, get_dist_as_str, get_earth_dist, get_path,\
     get_time_as_str, require_and_remove_key, parse_boolean, contains_arg, \
-    get_pokemon_cp_range, degrees_to_cardinal
+    get_pokemon_cp_range, degrees_to_cardinal, get_pkmn_name
 # Local Imports
 from . import config
 
@@ -854,6 +854,8 @@ class Manager(object):
         form_id = pkmn['form_id']
         form = self.__locale.get_form_name(pkmn_id, form_id)
         weather_id = pkmn['weather_id']
+        previous_id = pkmn['previous_id']
+        costume_id = pkmn['costume_id']
         weather_name = self.__locale.get_weather_name(weather_id)
         weather_emoji = self.__locale.get_weather_emoji(weather_id)
         time_id = pkmn['time_id']
@@ -866,17 +868,30 @@ class Manager(object):
         formicon = ''
         if pkmn_id == 201 or pkmn_id == 351:
             formicon = '_' + Form.Name(form_id)
-        # costume
+        costumeicon = ''
+        if costume_id:
+            costumeicon = '_' + Costume.Name(costume_id)
+        medalicon = ''
+        if pkmn_id == 19 and pkmn['tiny_rat'] or pkmn_id == 129 and pkmn['big_karp']:
+            medalicon = '_MEDAL'
+        previousicon = ''
+        if pkmn_id == 132 and previous_id:
+            previousicon = '_' + '{:02}'.format(previous_id)
         weathericon = ''
         if weather_id:
             weathericon = '_' + WeatherCondition.Name(weather_id)
+
         pkm_icon = ('pkm_' +
                     '{:03}'.format(pkmn_id) +
+                    medalicon +
                     gendericon +
                     formicon +
+                    costumeicon +
                     weathericon +
-                    '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id)
+                    '_' + GetMapObjectsResponse.TimeOfDay.Name(time_id) +
+                    previousicon
                     )
+
         log.warning('FETCHING GENERATED ICON: %s', pkm_icon)
 
         # Dynamic Weather Text
@@ -892,6 +907,9 @@ class Manager(object):
             weather_name = ''
         else:
             weather_name = '[' + weather_dynemoji + ' ' + weather_name + ']\n'
+
+        if pkmn['previous_id']:
+            pkmn['previous_id'] = '[' + get_pkmn_name(int(pkmn['previous_id'])) + ']'
 
         pkmn.update({
             'pkmn': name,

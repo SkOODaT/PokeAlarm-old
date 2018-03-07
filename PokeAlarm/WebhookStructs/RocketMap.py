@@ -110,6 +110,7 @@ class RocketMap:
             'catch_prob_2': check_for_none(float, data.get('catch_prob_2'), '?'),
             'catch_prob_3': check_for_none(float, data.get('catch_prob_3'), '?'),
             'form_id': check_for_none(int, data.get('form'), 0),
+            'costume_id': check_for_none(int, data.get('costume_id'), 0),
             'size': 'unknown',
             'size_full': '?',
             'tiny_rat': '',
@@ -120,7 +121,7 @@ class RocketMap:
             'rating_defense': data.get('rating_defense'),
             'previous_id': check_for_none(int, data.get('previous_id'), ''),
             'weather_id': check_for_none(int, data.get('weather_id'), ''),
-            'time_id': check_for_none(int, data.get('time_id'), ''),
+            'time_id': check_for_none(int, data.get('time_id'), 0),
             'mention': ''
         }
         if pkmn['atk'] != '?' and pkmn['def'] != '?' and pkmn['sta'] != '?':
@@ -158,9 +159,6 @@ class RocketMap:
             pkmn['catch_prob_2'] = "{:.1f}".format(pkmn['catch_prob_2'] * 100)
         if pkmn['catch_prob_3'] != '?':
             pkmn['catch_prob_3'] = "{:.1f}".format(pkmn['catch_prob_3'] * 100)
-
-        if pkmn['previous_id']:
-            pkmn['previous_id'] = '[' + get_pkmn_name(int(pkmn['previous_id'])) + ']'
 
         # Todo: Remove this when monocle get's it's own standard
         if pkmn['form_id'] == 0:
